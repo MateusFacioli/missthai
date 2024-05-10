@@ -39,4 +39,12 @@
   text-decoration: none;
 }
 
-/* Adicione mais estilização conforme necessário */
+.menu-item {
+  /* Estilos básicos do item de menu */
+  color: #000; /* Cor padrão do texto */
+}
+
+.menu-item:hover {
+  color: #0abab5; /* Cor verde Tiffany ao passar o mouse */
+  background-color: #e0f2f1; /* Cor de fundo leve ao passar o mouse */
+}
