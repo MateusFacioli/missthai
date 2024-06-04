@@ -1,235 +1,117 @@
-// import React, { Component } from 'react';
-// import { auth } from '../firebaseConfig'; // Certifique-se de que este caminho esteja correto
-// import { createUserWithEmailAndPassword } from 'firebase/auth';
+import React, { useState } from 'react';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
-// class StudentLogin extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       isRegistering: false, // Estado para controlar qual formulário mostrar
-//       showLoginForm: false, // Estado para controlar a visibilidade do formulário de login
-//       name: '',
-//       cpf: '',
-//       email: '',
-//       password: '',
-//       error: null,
-//     };
-//   }
+const StudentLogin = () => {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  const [showFields, setShowFields] = useState(false);
+  const [name, setName] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-//   toggleForm = () => {
-//     this.setState((prevState) => ({
-//       isRegistering: !prevState.isRegistering
-//     }));
-//   }
-
-//   toggleLoginForm = () => {
-//     this.setState((prevState) => ({ 
-//       showLoginForm: !prevState.showLoginForm 
-//     }));
-//   };
-
-
-//   handleInputChange = (event) => {
-//     const { name, value } = event.target;
-//     this.setState({ [name]: value });
-//   };
-
-//   handleLoginSubmit = async (event) => {
-//     event.preventDefault();
-//     const { email, password } = this.state;
-//     try {
-//       await auth.signInWithEmailAndPassword(email, password);
-//       console.log('Login bem-sucedido');
-//     } catch (error) {
-//       console.error('Erro ao fazer login:', error);
-//       this.setState({ error: error.message });
-//     }
-//   };
-
-//   handleRegisterSubmit = async (event) => {
-//     event.preventDefault();
-//     const { email, password } = this.state;
-//     try {
-//       await createUserWithEmailAndPassword(auth, email, password);
-//       console.log('Registro bem-sucedido');
-//     } catch (error) {
-//       console.error('Erro ao registrar:', error);
-//       this.setState({ error: error.message });
-//     }
-//   };
-
-//   render() {
-//     const { isRegistering, name, cpf, email, password, error, showLoginForm } = this.state;
-//     //{!showLoginForm && (botao login)}
-//     // {showLoginForm && ( form <email senha erro submit sou novo>}
-//     return (
-//       <div>
-    
-//         {isRegistering ? (
-//           <form onSubmit={this.handleRegisterSubmit}>
-//             <div>
-//               <label>Nome:</label>
-//               <input type="text" name="name" value={name} onChange={this.handleInputChange} required />
-//             </div>
-//             <div>
-//               <label>CPF:</label>
-//               <input type="text" name="cpf" value={cpf} onChange={this.handleInputChange} required />
-//             </div>
-//             <div>
-//               <label>Email:</label>
-//               <input type="email" name="email" value={email} onChange={this.handleInputChange} required />
-//             </div>
-//             <div>
-//               <label>Senha:</label>
-//               <input type="password" name="password" value={password} onChange={this.handleInputChange} required />
-//             </div>
-//             {error && <p style={{ color: 'red' }}>{error}</p>}
-//             <button type="submit">Registrar</button>
-//             <button type="button" onClick={this.toggleForm}>Já tenho conta</button>
-//           </form>
-//         ) : (
-//           <form onSubmit={this.handleLoginSubmit}>
-//             <div>
-//               <label>Email:</label>
-//               <input type="email" name="email" value={email} onChange={this.handleInputChange} required />
-//             </div>
-//             <div>
-//               <label>Senha:</label>
-//               <input type="password" name="password" value={password} onChange={this.handleInputChange} required />
-//             </div>
-//             {error && <p style={{ color: 'red' }}>{error}</p>}
-//             <button type="submit">Login</button>
-//             <button type="button" onClick={this.toggleForm}>Sou Novo</button>
-//           </form>
-//         )}
-//       </div>
-//     );
-//   }
-// }
-
-// export default StudentLogin;
-
-
-import React, { Component } from 'react';
-import { auth } from '../firebaseConfig'; // Certifique-se de que este caminho esteja correto
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-
-class StudentLogin extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isRegistering: false, // Estado para controlar qual formulário mostrar
-      showLoginForm: false, // Estado para controlar a visibilidade do formulário de login
-      showFields: false, // Estado para controlar a visibilidade dos campos de email e senha
-      name: '',
-      cpf: '',
-      email: '',
-      password: '',
-      error: null,
-    };
-  }
-
-  toggleForm = () => {
-    this.setState((prevState) => ({
-      isRegistering: !prevState.isRegistering,
-      showFields: !prevState.showFields // Alterna a visibilidade dos campos junto com o formulário
-    }));
-  }
-
-  toggleLoginForm = () => {
-    this.setState((prevState) => ({
-      showLoginForm: !prevState.showLoginForm,
-      showFields: !prevState.showFields // Alterna a visibilidade dos campos junto com o login
-    }));
+  const toggleForm = () => {
+    setIsRegistering(!isRegistering);
+    setShowFields(!showFields);
   };
 
-  handleInputChange = (event) => {
+  const toggleLoginForm = () => {
+    setShowLoginForm(!showLoginForm);
+    setShowFields(!showFields);
+  };
+
+  const handleInputChange = (event) => {
     const { name, value } = event.target;
-    this.setState({ [name]: value });
+    if (name === 'name') setName(value);
+    if (name === 'cpf') setCpf(value);
+    if (name === 'email') setEmail(value);
+    if (name === 'password') setPassword(value);
   };
 
-  handleLoginSubmit = async (event) => {
+  const handleLoginSubmit = async (event) => {
     event.preventDefault();
-    const { email, password } = this.state;
+    const auth = getAuth();
     try {
-      await auth.signInWithEmailAndPassword(email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       console.log('Login bem-sucedido');
+      navigate('/area-portal'); // Redireciona para a página do portal do estudante
     } catch (error) {
       console.error('Erro ao fazer login:', error);
-      this.setState({ error: error.message });
+      //setError(error.message);
+      alert('Erro ao fazer login: credencial não cadastrada'); // Mostra um alerta com a mensagem de erro
     }
   };
 
-  handleRegisterSubmit = async (event) => {
+  const handleRegisterSubmit = async (event) => {
     event.preventDefault();
-    const { email, password } = this.state;
+    const auth = getAuth();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      console.log('Registro bem-sucedido');
+      alert('Registro bem-sucedido');
     } catch (error) {
       console.error('Erro ao registrar:', error);
-      this.setState({ error: error.message });
+      alert('Erro ao registrar');
+      //setError(error.message);
     }
   };
 
-  render() {
-    const { isRegistering, name, cpf, email, password, error, showLoginForm, showFields } = this.state;
-
-    return (
-      <div>
-        {isRegistering ? (
-          <form onSubmit={this.handleRegisterSubmit}>
-            <div>
-              <label>Nome:</label>
-              <input type="text" name="name" value={name} onChange={this.handleInputChange} required />
-            </div>
-            <div>
-              <label>CPF:</label>
-              <input type="text" name="cpf" value={cpf} onChange={this.handleInputChange} required />
-            </div>
-            {showFields && (
-              <>
-                <div>
-                  <label>Email:</label>
-                  <input type="email" name="email" value={email} onChange={this.handleInputChange} required />
-                </div>
-                <div>
-                  <label>Senha:</label>
-                  <input type="password" name="password" value={password} onChange={this.handleInputChange} required />
-                </div>
-              </>
-            )}
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <button type="submit">Registrar</button>
-            <button type="button" onClick={this.toggleForm}>Já tenho conta</button>
-          </form>
-        ) : (
+  return (
+    <div>
+      {isRegistering ? (
+        <form onSubmit={handleRegisterSubmit}>
           <div>
-            {showFields && (
-              <form onSubmit={this.handleLoginSubmit}>
-                <div>
-                  <label>Email:</label>
-                  <input type="email" name="email" value={email} onChange={this.handleInputChange} required />
-                </div>
-                <div>
-                  <label>Senha:</label>
-                  <input type="password" name="password" value={password} onChange={this.handleInputChange} required />
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                <button type="submit">Login</button>
-              </form>
-            )}
-            {!showFields && (
-              <>
-                <button onClick={this.toggleLoginForm}>Login</button>
-                <button onClick={this.toggleForm}>Sou Novo</button>
-              </>
-            )}
+            <label>Nome:</label>
+            <input type="text" name="name" value={name} onChange={handleInputChange} required />
           </div>
-        )}
-      </div>
-    );
-  }
-}
+          <div>
+            <label>CPF:</label>
+            <input type="text" name="cpf" value={cpf} onChange={handleInputChange} required />
+          </div>
+          {showFields && (
+            <>
+              <div>
+                <label>Email:</label>
+                <input type="email" name="email" value={email} onChange={handleInputChange} required />
+              </div>
+              <div>
+                <label>Senha:</label>
+                <input type="password" name="password" value={password} onChange={handleInputChange} required />
+              </div>
+            </>
+          )}
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <button type="submit">Registrar</button>
+          <button type="button" onClick={toggleForm}>Já tenho conta</button>
+        </form>
+      ) : (
+        <div>
+          {showFields && (
+            <form onSubmit={handleLoginSubmit}>
+              <div>
+                <label>Email:</label>
+                <input type="email" name="email" value={email} onChange={handleInputChange} required />
+              </div>
+              <div>
+                <label>Senha:</label>
+                <input type="password" name="password" value={password} onChange={handleInputChange} required />
+              </div>
+              {error && <p style={{ color: 'red' }}>{error}</p>}
+              <button type="submit">Login</button>
+            </form>
+          )}
+          {!showFields && (
+            <>
+              <button onClick={toggleLoginForm}>Login</button>
+              <button onClick={toggleForm}>Sou Novo</button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default StudentLogin;

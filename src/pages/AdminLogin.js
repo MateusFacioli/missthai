@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import firebase  from "../FirebaseService"
 
 const AdminLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
