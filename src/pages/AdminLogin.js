@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import firebase  from "../FirebaseService"
+import { getAlunos } from '../FirebaseService';
 
 const AdminLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -11,26 +11,26 @@ const AdminLogin = () => {
   // Emails permitidos para login
   const allowedEmails = ["mateusrodrigues790@gmail.com", "english.missthai@gmail.com", "thaaipaes@gmail.com"];
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        // Verifica se o email está na lista de permitidos
-        if (allowedEmails.includes(result.user.email)) {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      if (allowedEmails.includes(result.user.email)) {
           console.log("Login com Google bem-sucedido:", result.user);
-          setIsLoggedIn(true); // Atualiza o estado para logado
+          setIsLoggedIn(true);
+          const alunos = await getAlunos(); // Chama a função fetchAlunos
+        //  // Converte o vetor de alunos em uma string formatada
+        //     const alunosString = alunos.map(aluno => `Nome: ${aluno.nome}, Valor: ${aluno.valor}, Vezes por Semana: ${aluno.vezesSemana}`).join('\n');
+        // // Exibe a string formatada no alert
+        //   alert(`Seus alunos são:\n${alunosString}`);
           navigate('/area-admin'); // Redireciona para AdminAreaPage
-        } else {
-          // Se o email não estiver na lista, trata o acesso negado
+      } else {
           console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
-          // Aqui você pode adicionar lógica para lidar com acessos não permitidos
-        }
-      })
-      .catch((error) => {
-        console.error("Erro ao fazer login com Google:", error.message);
-      });
-  };
-
+      }
+  } catch (error) {
+      console.error("Erro ao fazer login com Google:", error.message);
+  }
+};
   return (
     <div>
       {!isLoggedIn && (

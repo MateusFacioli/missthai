@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, BrowserRouter } from 'react-router-dom';
 import './App.css';
-import LoginPage from './pages/AdminLogin';
+import AdminLogin from './pages/AdminLogin';
 import StudentPortalPage from './pages/StudentPortalPage';
 import AdminAreaPage from './pages/AdminAreaPage';
 import HomePage from './pages/HomePage';
@@ -16,7 +16,7 @@ class App extends Component {
          <Route path ='/' element = { <HomePage/> }/>
           <Route path ='/area-admin' element = { <AdminAreaPage/> }/>
           <Route path ='/area-portal' element = {<StudentPortalPage/>}/>
-          <Route path ='/area-login' element = {<LoginPage/>}/>
+          <Route path ='/area-login' element = {<AdminLogin/>}/>
       </Routes>
       </BrowserRouter>
     );

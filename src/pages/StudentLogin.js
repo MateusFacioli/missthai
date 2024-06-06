@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { addAluno } from '../FirebaseService';
 
 const StudentLogin = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -10,6 +11,7 @@ const StudentLogin = () => {
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [vezesNaSemana, setVezesNaSemana] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -29,6 +31,7 @@ const StudentLogin = () => {
     if (name === 'cpf') setCpf(value);
     if (name === 'email') setEmail(value);
     if (name === 'password') setPassword(value);
+    if (name === 'vezesNaSemana') setVezesNaSemana(value);
   };
 
   const handleLoginSubmit = async (event) => {
@@ -50,11 +53,12 @@ const StudentLogin = () => {
     const auth = getAuth();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana }); // Adiciona o aluno ao banco de dados
       alert('Registro bem-sucedido');
+      navigate('/area-portal'); // Redireciona para a página do portal do estudante
     } catch (error) {
       console.error('Erro ao registrar:', error);
       alert('Erro ao registrar');
-      //setError(error.message);
     }
   };
 
@@ -79,6 +83,10 @@ const StudentLogin = () => {
               <div>
                 <label>Senha:</label>
                 <input type="password" name="password" value={password} onChange={handleInputChange} required />
+              </div>
+              <div>
+                <label>Vezes na Semana:</label>
+                <input type="number" name="vezesNaSemana" value={vezesNaSemana} onChange={handleInputChange} required />
               </div>
             </>
           )}
