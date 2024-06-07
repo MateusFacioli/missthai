@@ -48,3 +48,29 @@
   color: #0abab5; /* Cor verde Tiffany ao passar o mouse */
   background-color: #e0f2f1; /* Cor de fundo leve ao passar o mouse */
 }
+
+.alunos-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+.alunos-table th, .alunos-table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+.alunos-table th {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+/* .alunos-table tr:nth-of-type(even) {
+  background-color: #f9f9f9;
+}
+
+.alunos-table tr:hover {
+  background-color: #f1f1f1;
+} */
