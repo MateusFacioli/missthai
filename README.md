@@ -80,11 +80,13 @@ ReactDOM.render(
   </Router>,
   document.getElementById('root')
 );
+##fontes e icones 
+npm install @fortawesome/react-fontawesome @fortawesome/free-brands-svg-icons @fortawesome/fontawesome-svg-core
 
 ### Passo 6: Executando o Projeto
 Para iniciar o servidor de desenvolvimento e visualizar o projeto no navegador, execute:
 
-npm start
+npm start ou nodemon start
 Acesse http://localhost:3000 para ver o aplicativo em execução.
 
 Comandos Úteis

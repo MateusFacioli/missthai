@@ -110,7 +110,7 @@ const validateVezesNaSemana = (vezesNaSemana) => {
 
   return (
     <div className="App-header">
-      <p>Você está na área administrativa</p>
+      <p>Área administrativa</p>
       {alunos.length === 0 ? (
         <p>Sem dados de alunos</p>
       ) : (
