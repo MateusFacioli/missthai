@@ -1,7 +1,20 @@
 import { db, storage } from './firebaseConfig';
 import { ref, set, get, child, update, remove } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL,listAll, deleteObject } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
+import { getFirestore, collection, getDocs, query, where, orderBy } from "firebase/firestore";
 
+//nao usado
+export const getMateriais = async () => {
+  const db = getFirestore();
+  const materiaisRef = collection(db, "uploads");
+  const q = query(materiaisRef, /*where("cpf", "==", cpf),*/ orderBy("lastModified", "desc"));
+  const querySnapshot = await getDocs(q);
+  const materiais = [];
+  querySnapshot.forEach((doc) => {
+    materiais.push({ id: doc.id, ...doc.data() });
+  });
+  return materiais;
+};
 
 // Função para adicionar um novo aluno
 export const addAluno = async (aluno) => {
@@ -41,11 +54,8 @@ export const deleteAluno = async (cpf) => {
 
 // Função para fazer o upload de múltiplos arquivos e armazenar no Realtime Database
 export const uploadFiles = async (cpf, files) => {
-  //const alunoRef = storage.ref(db, 'alunos/' + cpf + '/materiais').put(files).on("state_changed", alert("success"), alert);
-  //const alunoRef = ref(db, 'alunos/materiais');
   const alunoRef = ref(db, 'alunos/' + cpf + '/materiais');
   const uploadPromises = Array.from(files).map(async (file) => {
-      //const fileRef = storageRef(storage, `materiais/${file.name}`);
       const fileRef = storageRef(storage, `uploads/${cpf}/${file.name}`);
       await uploadBytes(fileRef, file);
       const fileUrl = await getDownloadURL(fileRef);
@@ -58,17 +68,24 @@ export const uploadFiles = async (cpf, files) => {
   return Promise.all(uploadPromises);
 };
 
-// Função para obter os materiais de um aluno específico
+// Função para obter os materiais de um aluno específico diretamente do Storage
 export const getMateriaisAluno = async (cpf) => {
-  const alunoRef = ref(db, 'alunos/' + cpf + '/materiais');
-  // const urlStorage = 'gs://missthai-dcfd6.appspot.com';
-  // const alunoRef = ref('/uploads' + cpf);
-  const snapshot = await get(alunoRef);
-  if (snapshot.exists()) {
-      return snapshot.val();
-  } else {
-      return {};
-  }
+  try{
+  const listRef = ref(storage, `uploads/${cpf}/`);
+  console.log("capivara", listRef)
+  const res = await listAll(listRef);
+  console.log("capivara", res)
+  const materiais = await Promise.all(res.items.map(async (itemRef) => {
+    const url = await getDownloadURL(itemRef);
+    const metadata = await itemRef.getMetadata();
+    return { url: url, tamanho: metadata.size, ultimaVezEditado: metadata.update };
+  }));
+  console.log("capivara", materiais)
+  return materiais;
+} catch (error) {
+  console.error('capivara:', error);
+    throw error;
+}
 };
 
 // Função para remover um arquivo

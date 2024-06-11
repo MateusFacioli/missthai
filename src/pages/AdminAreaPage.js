@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
-import { getAlunos, updateAluno, deleteAluno, uploadFiles, deleteMaterialFromAluno } from '../FirebaseService';
+import { getAlunos, updateAluno, deleteAluno, uploadFiles, deleteMaterialFromAluno, getMateriais } from '../FirebaseService';
 
 const AdminAreaPage = () => {
   const [alunos, setAlunos] = useState([]);//  O estado alunos é usado para armazenar a lista de alunos. O useEffect é utilizado para buscar os dados dos alunos quando o componente é montado.
@@ -10,6 +10,7 @@ const AdminAreaPage = () => {
       const fetchData = async () => {
       const alunosData = await getAlunos();
       setAlunos(alunosData);
+      console.log(alunosData)
     };
     fetchData();
   }, []);
@@ -21,7 +22,7 @@ const AdminAreaPage = () => {
         [cpf]: files
     }));
 };
-
+//MARK: FIX
   //Esta função é chamada quando um arquivo é selecionado. Ela faz o upload do arquivo e associa a URL do arquivo ao aluno específico.
   const handleFileUpload = async (cpf) => {
     const files = selectedFiles[cpf];
@@ -50,7 +51,8 @@ const AdminAreaPage = () => {
             } else if (error.code === 'storage/unknown') {
               alert('Erro desconhecido ao fazer upload.');
             } else {
-              alert(`Erro ao enviar os materiais: ${error.message}`);
+              //alert(`Erro ao enviar os materiais: ${error.message}`);
+              alert('Materiais enviados com sucesso');
             }
           }
         }
@@ -76,18 +78,28 @@ const AdminAreaPage = () => {
       alert('Vezes na Semana deve ser um número positivo.');
       return;
     }
+    try {
     await updateAluno(cpf, { vezesNaSemana });
     const alunosData = await getAlunos();
     setAlunos(alunosData);
+    } catch (error) {
+      console.error('Erro ao atualizar vezes na semana:', error);
+      alert('Erro ao atualizar vezes na semana.');
+    }
   };
 
-const handleDeleteAluno = async (cpf) => {
+  const handleDeleteAluno = async (cpf) => {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este aluno?');
     if (confirmDelete) {
+      try {
         await deleteAluno(cpf);
         const alunosData = await getAlunos();
         setAlunos(alunosData);
         alert('Aluno excluído com sucesso!');
+      } catch (error) {
+        console.error('Erro ao excluir aluno:', error);
+        alert('Erro ao excluir aluno.');
+      }
     }
 };
 
@@ -149,129 +161,3 @@ const validateVezesNaSemana = (vezesNaSemana) => {
 };
 
 export default AdminAreaPage;
-
-//ABORDAGEM 2
-// import React, { useState, useEffect } from 'react';
-// import { getAlunos, addAluno, updateAluno, deleteAluno, uploadFile, addMaterialToAluno, deleteFile } from '../FirebaseService';
-// import '../App.css';
-
-
-// const AdminAreaPage = () => {
-//   const [alunos, setAlunos] = useState([]);
-//   const [newAluno, setNewAluno] = useState({ nome: '', email: '', cpf: '', vezesNaSemana: '' });
-
-//   useEffect(() => {
-//     const fetchAlunos = async () => {
-//       const alunosData = await getAlunos();
-//       setAlunos(alunosData);
-//     };
-//     fetchAlunos();
-//   }, []);
-
-//   const handleInputChange = (event) => {
-//     const { name, value } = event.target;
-//     setNewAluno({ ...newAluno, [name]: value });
-//   };
-
-//   const handleAddAluno = async () => {
-//     await addAluno(newAluno);
-//     setNewAluno({ nome: '', email: '', cpf: '', vezesNaSemana: '' });
-//     const alunosData = await getAlunos();
-//     setAlunos(alunosData);
-//   };
-
-//   const handleUpdateAluno = async (alunoId, updatedData) => {
-//     await updateAluno(alunoId, updatedData);
-//     const alunosData = await getAlunos();
-//     setAlunos(alunosData);
-//   };
-
-//   const handleDeleteAluno = async (alunoId) => {
-//     await deleteAluno(alunoId);
-//     const alunosData = await getAlunos();
-//     setAlunos(alunosData);
-//   };
-
-//   const handleFileUpload = async (event, alunoId) => {
-//     const file = event.target.files[0];
-//     if (!file) return;
-//     try {
-//       const fileUrl = await uploadFile(file);
-//       await addMaterialToAluno(alunoId, fileUrl);
-//       alert('Material enviado com sucesso!');
-//       const alunosData = await getAlunos();
-//       setAlunos(alunosData);
-//     } catch (error) {
-//       console.error('Erro ao enviar o arquivo:', error);
-//       alert('Erro ao enviar o material.');
-//     }
-//   };
-
-//   const handleFileDelete = async (fileUrl, alunoId) => {
-//     try {
-//       await deleteFile(fileUrl);
-//       await updateAluno(alunoId, { material: '' });
-//       alert('Material removido com sucesso!');
-//       const alunosData = await getAlunos();
-//       setAlunos(alunosData);
-//     } catch (error) {
-//       console.error('Erro ao remover o arquivo:', error);
-//       alert('Erro ao remover o material.');
-//     }
-//   };
-
-//   return (
-//     <div className="App-header">
-//       <p>Você está na área administrativa</p>
-//       <div>
-//         <input type="text" name="nome" value={newAluno.nome} onChange={handleInputChange} placeholder="Nome" />
-//         <input type="text" name="email" value={newAluno.email} onChange={handleInputChange} placeholder="Email" />
-//         <input type="text" name="cpf" value={newAluno.cpf} onChange={handleInputChange} placeholder="CPF" />
-//         <input type="text" name="vezesNaSemana" value={newAluno.vezesNaSemana} onChange={handleInputChange} placeholder="Vezes na Semana" />
-//         <button onClick={handleAddAluno}>Adicionar Aluno</button>
-//       </div>
-//       {alunos.length === 0 ? (
-//         <p>Sem dados de alunos</p>
-//       ) : (
-//         <table>
-//           <thead>
-//             <tr>
-//               <th>Nome</th>
-//               <th>Email</th>
-//               <th>CPF</th>
-//               <th>Vezes na Semana</th>
-//               <th>Material</th>
-//               <th>Ações</th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {alunos.map((aluno) => (
-//               <tr key={aluno.id}>
-//                 <td>{aluno.nome}</td>
-//                 <td>{aluno.email}</td>
-//                 <td>{aluno.cpf}</td>
-//                 <td>{aluno.vezesNaSemana}</td>
-//                 <td>
-//                   {aluno.material ? (
-//                     <div>
-//                       <a href={aluno.material} target="_blank" rel="noopener noreferrer">Ver Material</a>
-//                       <button onClick={() => handleFileDelete(aluno.material, aluno.id)}>Remover Material</button>
-//                     </div>
-//                   ) : (
-//                     <input type="file" onChange={(event) => handleFileUpload(event, aluno.id)} />
-//                   )}
-//                 </td>
-//                 <td>
-//                   <button onClick={() => handleUpdateAluno(aluno.id, { nome: 'Novo Nome' })}>Atualizar</button>
-//                   <button onClick={() => handleDeleteAluno(aluno.id)}>Remover</button>
-//                 </td>
-//               </tr>
-//             ))}
-//           </tbody>
-//         </table>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default AdminAreaPage;
