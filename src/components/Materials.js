@@ -29,35 +29,35 @@ const Materials = ({cpf}) => {
     return (
         <div className="material-container">
             <h1>Seus arquivos</h1>
-            {Object.keys(materiais).length === 0 ? (
-                <p>Sem materiais disponíveis</p>
-            ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>URL</th>
-                            <th>Tamanho</th>
-                            <th>Última vez editado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {Object.keys(materiais).map((key) => (
-                            <tr key={key}>
-                                <td><a href={materiais[key].url} target="_blank" rel="noopener noreferrer">Ver Material</a></td>
-                                <td>{materiais[key].tamanho} bytes</td>
-                                <td>{materiais[key].ultimaVezEditado}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-             <nav className="App-nav">
-                  <ul className="nav-list">
-                    <li><Link to="/area-portal">Voltar para Home</Link></li>
-                  </ul>
-                </nav>
-        </div>
-    );
+            {materiais.length === 0 ? (
+        <p>Sem materiais disponíveis</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Tamanho</th>
+              <th>Última vez editado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {materiais.map((material, index) => (
+              <tr key={index}>
+                <td><a href={material.url} target="_blank" rel="noopener noreferrer">Ver Material</a></td>
+                <td>{material.tamanho} bytes</td>
+                <td>{material.ultimaVezEditado}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <nav className="App-nav">
+        <ul className="nav-list">
+          <li><Link to="/area-portal">Voltar para Home</Link></li>
+        </ul>
+      </nav>
+    </div>
+  );
 };
 
 export default Materials;
