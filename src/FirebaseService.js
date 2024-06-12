@@ -126,21 +126,6 @@ export const getMateriaisAluno = async (cpf) => {
 }
 };
 
-// export const getMateriaisAluno = async (cpf) => {
-//   try {
-//     console.log('db:', db); // Verifique o estado do objeto db
-//     const listRef = db.collection('uploads').doc(cpf);
-//     const res = await listRef.get();
-//     if (!res.exists) {
-//       throw new Error('No such document!');
-//     }
-//     return res.data();
-//   } catch (error) {
-//     console.error('Erro ao obter materiais do aluno:', error);
-//     throw error;
-//   }
-// };
-
 // Função para remover um arquivo
 export const deleteFile = async (fileUrl) => {
   const fileRef = storageRef(storage, fileUrl);

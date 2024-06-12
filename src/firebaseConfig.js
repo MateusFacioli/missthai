@@ -19,7 +19,7 @@ const firebaseConfig = {
 
 // Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
-// firebase.initializeApp(firebaseConfig); //erro é aqui
+// firebase.initializeApp(firebaseConfig);
 
 // Inicializa os serviços do Firebase
 const db = getDatabase(app);

@@ -9,7 +9,7 @@ class Home extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h1>você esta em home de MissThai - web</h1>
+          <h1>Home de MissThai - web</h1>
           <p>Faça o login para melhor experiência</p>
           <p>Sou Admin <AdminLogin></AdminLogin> </p> 
          <p>Sou Aluno <StudentLogin> </StudentLogin></p>

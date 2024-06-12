@@ -22,7 +22,7 @@ const AdminAreaPage = () => {
         [cpf]: files
     }));
 };
-//MARK: FIX
+
   //Esta função é chamada quando um arquivo é selecionado. Ela faz o upload do arquivo e associa a URL do arquivo ao aluno específico.
   const handleFileUpload = async (cpf) => {
     const files = selectedFiles[cpf];

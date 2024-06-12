@@ -84,7 +84,7 @@ const StudentLogin = () => {
     const auth = getAuth();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana/*, materiais */}); // Adiciona o aluno ao banco de dados
+      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana/*, materiais */});
       alert('Registro bem-sucedido');
       navigate('/area-portal');
     } catch (error) {

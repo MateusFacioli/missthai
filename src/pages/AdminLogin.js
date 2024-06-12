@@ -18,12 +18,8 @@ const AdminLogin = () => {
       if (allowedEmails.includes(result.user.email)) {
           console.log("Login com Google bem-sucedido:", result.user);
           setIsLoggedIn(true);
-          const alunos = await getAlunos(); // Chama a função fetchAlunos
-        //  // Converte o vetor de alunos em uma string formatada
-        //     const alunosString = alunos.map(aluno => `Nome: ${aluno.nome}, Valor: ${aluno.valor}, Vezes por Semana: ${aluno.vezesSemana}`).join('\n');
-        // // Exibe a string formatada no alert
-        //   alert(`Seus alunos são:\n${alunosString}`);
-          navigate('/area-admin'); // Redireciona para AdminAreaPage
+          const alunos = await getAlunos();
+          navigate('/area-admin');
       } else {
           console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
       }

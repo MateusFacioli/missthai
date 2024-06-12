@@ -16,7 +16,7 @@ const Materials = ({cpf}) => {
             console.log('materias data', materiaisData);
             setMateriais(materiaisData);
                 
-            } catch (error) { // erro aqui TypeError: db._checkNotDeleted is not a function
+            } catch (error) {
             console.error('Erro ao obter materiais do aluno pqqq', error);
             setError(error.message);
             //alert('Erro ao obter materiais do aluno.');
