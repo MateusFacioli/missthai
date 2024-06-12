@@ -2,6 +2,7 @@ import { db, storage } from './firebaseConfig';
 import { ref, set, get, child, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
 import { getFirestore, collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { getAuth, deleteUser } from 'firebase/auth';
 
 //nao usado
 export const getMateriais = async () => {
@@ -40,16 +41,53 @@ export const updateAluno = async (cpf, updatedData) => {
 };
 
 // Função para remover um aluno e seus arquivos
-export const deleteAluno = async (cpf) => {
-  const alunoRef = ref(db, 'alunos/' + cpf);
-  const snapshot = await get(alunoRef);
-  if (snapshot.exists()) {
-      const materiais = snapshot.val().materiais || {};
-      for (const key in materiais) {
-          await deleteFile(materiais[key].url);
-      }
-  }
-  await remove(alunoRef);
+export const deleteAluno = async (cpf, email, password) => {
+  try {
+    const alunoRef = ref(db, 'alunos/' + cpf);
+    const snapshot = await get(alunoRef);
+    if (snapshot.exists()) {
+        const materiais = snapshot.val().materiais || {};
+        for (const key in materiais) {
+            await deleteFile(materiais[key].url);
+        }
+    }
+
+    // Remover arquivos do Firebase Storage
+    // try {
+    //     const storageListRef = storageRef(storage, `uploads/${cpf}/`);
+    //     const res = await listAll(storageListRef);
+    //     const deletePromises = res.items.map((itemRef) => deleteObject(itemRef));
+    //     await Promise.all(deletePromises);
+    // } catch (error) {
+    //     console.error('Erro ao remover arquivos do Firebase Storage:', error);
+    //     throw new Error('Erro ao remover arquivos do Firebase Storage.');
+    // }
+
+    // Remover o aluno do Realtime Database
+    try {
+        await remove(alunoRef);
+    } catch (error) {
+        console.error('Erro ao remover aluno do Realtime Database:', error);
+        throw new Error('Erro ao remover aluno do Realtime Database.');
+    }
+
+    // Remover o aluno do Firebase Authentication
+    // try {
+    //     const auth = getAuth();
+    //     const user = auth.currentUser;
+    //     if (user) {
+    //         await deleteUser(user);
+    //     }
+    // } catch (error) {
+    //     console.error('Erro ao remover aluno do Firebase Authentication:', error);
+    //     throw new Error('Erro ao remover aluno do Firebase Authentication.');
+    // }
+
+    console.log('Aluno removido com sucesso.');
+} catch (error) {
+    console.error('Erro ao remover aluno:', error);
+    throw new Error('Erro ao remover aluno.');
+}
 };
 
 // Função para fazer o upload de múltiplos arquivos e armazenar no Realtime Database

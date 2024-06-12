@@ -88,19 +88,28 @@ const AdminAreaPage = () => {
     }
   };
 
-  const handleDeleteAluno = async (cpf) => {
+  const handleDeleteAluno = async (cpf, email, password) => {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este aluno?');
     if (confirmDelete) {
       try {
-        await deleteAluno(cpf);
+        await deleteAluno(cpf, email, password);
         const alunosData = await getAlunos();
         setAlunos(alunosData);
         alert('Aluno excluído com sucesso!');
       } catch (error) {
         console.error('Erro ao excluir aluno:', error);
-        alert('Erro ao excluir aluno.');
-      }
+        if (error.message.includes('Firebase Storage')) {
+            alert('Erro ao remover arquivos do Firebase Storage.');
+        } else if (error.message.includes('Realtime Database')) {
+            alert('Erro ao remover aluno do Realtime Database.');
+        } else if (error.message.includes('Firebase Authentication')) {
+            alert('Erro ao remover aluno do Firebase Authentication.');
+        } else {
+          console.log(error);
+            alert('Erro ao excluir aluno vix');
+        }
     }
+}
 };
 
 const validateVezesNaSemana = (vezesNaSemana) => {
@@ -149,7 +158,11 @@ const validateVezesNaSemana = (vezesNaSemana) => {
                 </td>
                 <td>
                 <button onClick={() => handleUpdateVezesSemanaAluno(aluno.cpf, prompt('Digite o novo valor de vezes na semana:', aluno.vezesNaSemana))}>Atualizar Vezes na Semana</button>
-                  <button onClick={() => handleDeleteAluno(aluno.cpf)}>Remover aluno</button>
+                {alunos.map((aluno) => (
+                      <ul key={aluno.cpf}>
+                          <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>Excluir aluno</button>
+                      </ul>
+                  ))}
                 </td>
               </tr>
             ))}
