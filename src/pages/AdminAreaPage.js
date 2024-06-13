@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { getAlunos, updateAluno, deleteAluno, uploadFiles, deleteMaterialFromAluno, getMateriais } from '../FirebaseService';
+import { storage } from '../firebaseConfig';
+import { getDownloadURL, ref, listAll, uploadBytesResumable } from 'firebase/storage';
 
 const AdminAreaPage = () => {
   const [alunos, setAlunos] = useState([]);//  O estado alunos é usado para armazenar a lista de alunos. O useEffect é utilizado para buscar os dados dos alunos quando o componente é montado.
   const [selectedFiles, setSelectedFiles] = useState({}); 
+  const [uploadProgress, setUploadProgress] = useState({});
 
   useEffect(() => {
       const fetchData = async () => {
@@ -32,18 +35,35 @@ const AdminAreaPage = () => {
     }
     const confirmUpload = window.confirm('Tem certeza que deseja adicionar estes arquivos?');
     if (confirmUpload) {
-        try {
-            // for (const file of files) {
-              await uploadFiles(cpf, files);
-            // }
-            alert('Materiais enviados com sucesso!');
-            const alunosData = await getAlunos();
-            setAlunos(alunosData);
-            setSelectedFiles((prevSelectedFiles) => ({
-                ...prevSelectedFiles,
-                [cpf]: null
-            }));
-          } catch (error) {
+      try {
+        const uploadPromises = Array.from(files).map((file) => {
+          return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, `uploads/${cpf}/${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on(
+              'state_changed',
+              (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress((prevProgress) => ({ ...prevProgress, [file.name]: progress }));
+              },
+              (error) => {
+                reject(error);
+              },
+              async () => {
+                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                resolve(url);
+              }
+            );
+          });
+        });
+
+        await Promise.all(uploadPromises);
+        alert('Materiais enviados com sucesso!');
+        const alunosData = await getAlunos();
+        setAlunos(alunosData);
+        setSelectedFiles((prevSelectedFiles) => ({ ...prevSelectedFiles, [cpf]: null }));
+      } catch (error) {
             if (error.code === 'storage/unauthorized') {
               alert('Você não tem permissão para fazer upload de arquivos.');
             } else if (error.code === 'storage/canceled') {
@@ -51,8 +71,7 @@ const AdminAreaPage = () => {
             } else if (error.code === 'storage/unknown') {
               alert('Erro desconhecido ao fazer upload.');
             } else {
-              //alert(`Erro ao enviar os materiais: ${error.message}`);
-              alert('Materiais enviados com sucesso');
+              alert(`Erro ao enviar os materiais: ${error.message}`);
             }
           }
         }
@@ -153,6 +172,13 @@ const validateVezesNaSemana = (vezesNaSemana) => {
                   <div>
                     <input type="file" multiple onChange={(event) => handleFileSelection(event, aluno.cpf)} />
                     <button onClick={() => handleFileUpload(aluno.cpf)}>Upload</button>
+                    {selectedFiles[aluno.cpf] &&
+                        Array.from(selectedFiles[aluno.cpf]).map((file) => (
+                          <div key={file.name}>
+                            <p>{file.name}</p>
+                            <progress value={uploadProgress[file.name] || 0} max="100" />
+                          </div>
+                        ))}
                   </div>
                   )}
                 </td>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { addAluno } from '../FirebaseService';
@@ -12,7 +12,6 @@ const StudentLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [vezesNaSemana, setVezesNaSemana] = useState('');
-  //const [materiais, setMateriais] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -33,7 +32,6 @@ const StudentLogin = () => {
     if (name === 'email') setEmail(value);
     if (name === 'password') setPassword(value);
     if (name === 'vezesNaSemana') setVezesNaSemana(value);
-    //if(name === 'materiais') setMateriais(value);
   };
 
   //validations 

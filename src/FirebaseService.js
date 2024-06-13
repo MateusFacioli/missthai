@@ -52,17 +52,6 @@ export const deleteAluno = async (cpf, email, password) => {
         }
     }
 
-    // Remover arquivos do Firebase Storage
-    // try {
-    //     const storageListRef = storageRef(storage, `uploads/${cpf}/`);
-    //     const res = await listAll(storageListRef);
-    //     const deletePromises = res.items.map((itemRef) => deleteObject(itemRef));
-    //     await Promise.all(deletePromises);
-    // } catch (error) {
-    //     console.error('Erro ao remover arquivos do Firebase Storage:', error);
-    //     throw new Error('Erro ao remover arquivos do Firebase Storage.');
-    // }
-
     // Remover o aluno do Realtime Database
     try {
         await remove(alunoRef);
@@ -70,18 +59,6 @@ export const deleteAluno = async (cpf, email, password) => {
         console.error('Erro ao remover aluno do Realtime Database:', error);
         throw new Error('Erro ao remover aluno do Realtime Database.');
     }
-
-    // Remover o aluno do Firebase Authentication
-    // try {
-    //     const auth = getAuth();
-    //     const user = auth.currentUser;
-    //     if (user) {
-    //         await deleteUser(user);
-    //     }
-    // } catch (error) {
-    //     console.error('Erro ao remover aluno do Firebase Authentication:', error);
-    //     throw new Error('Erro ao remover aluno do Firebase Authentication.');
-    // }
 
     console.log('Aluno removido com sucesso.');
 } catch (error) {
@@ -108,22 +85,39 @@ export const uploadFiles = async (cpf, files) => {
 
 // Função para obter os materiais de um aluno específico diretamente do Storage
 export const getMateriaisAluno = async (cpf) => {
-  try{
-  const listRef = ref(storage, `uploads/${cpf}/`);
-  console.log("capivara storage", storage)
-  const res = await listAll(listRef);
-  console.log("capivara list", res)
-  const materiais = await Promise.all(res.items.map(async (itemRef) => {
-    const url = await getDownloadURL(itemRef);
-    const metadata = await itemRef.getMetadata();
-    return { url: url, tamanho: metadata.size, ultimaVezEditado: metadata.update };
-  }));
-  console.log("capivara materiais", materiais)
-  return materiais;
-} catch (error) {
-  console.error('capivara erro:', error);
+  if (!cpf) {
+    alert('CPF não fornecido');
+    throw new Error('CPF não fornecido');
+  }
+
+  try {
+    const listRef = ref(storage, `uploads/${cpf}/`);
+    const res = await listAll(listRef);
+
+    if (res.items.length === 0) {
+      alert('Nenhum material encontrado para este aluno!');
+      throw new Error('Nenhum material encontrado para este aluno!');
+    }
+
+    const materiais = await Promise.all(
+      res.items.map(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);
+        const metadata = await itemRef.getMetadata();
+        return {
+          name: itemRef.name,
+          url,
+          tamanho: metadata.size,
+          ultimaVezEditado: metadata.updated,
+        };
+      })
+    );
+
+    return materiais;
+  } catch (error) {
+    console.error('Erro ao obter materiais do aluno:', error);
+    alert('Erro ao obter materiais do aluno:', error);
     throw error;
-}
+  }
 };
 
 // Função para remover um arquivo

@@ -1,20 +1,17 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { Link } from 'react-router-dom';
 import { storage } from '../firebaseConfig';
 import { getDownloadURL, ref, listAll } from 'firebase/storage';
-import { CpfContext } from './CpfContext';
 
-const Materials = () => {
+const Upload = ({ cpf }) => {
   const [materiais, setMateriais] = useState([]);
   const [error, setError] = useState(null);
-  const { cpf } = useContext(CpfContext);
 
   useEffect(() => {
     const fetchMateriais = async () => {
       try {
         const listRef = ref(storage, `uploads/${cpf}/`);
-        console.log("caminho do banco:" ,listRef);
         const res = await listAll(listRef);
         const materiais = await Promise.all(
           res.items.map(async (itemRef) => {
@@ -31,7 +28,6 @@ const Materials = () => {
         setMateriais(materiais);
       } catch (error) {
         console.error('Erro ao obter materiais do aluno:', error);
-
         setError(error.message);
       }
     };
@@ -79,4 +75,4 @@ const Materials = () => {
   );
 };
 
-export default Materials;
+export default Upload;
