@@ -16,17 +16,17 @@ const AdminLogin = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       if (allowedEmails.includes(result.user.email)) {
-          console.log("Login com Google bem-sucedido:", result.user);
-          setIsLoggedIn(true);
-          const alunos = await getAlunos();
-          navigate('/area-admin');
+        console.log("Login com Google bem-sucedido:", result.user);
+        setIsLoggedIn(true);
+        const alunos = await getAlunos();
+        navigate('/area-admin');
       } else {
-          console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
+        console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Erro ao fazer login com Google:", error.message);
-  }
-};
+    }
+  };
   return (
     <div>
       {!isLoggedIn && (

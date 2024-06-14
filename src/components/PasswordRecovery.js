@@ -30,15 +30,14 @@ const PasswordRecovery = () => {
           name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Digite seu e-mail"/>
-        {/* <Link to = "/area-portal"><button type="submit">Recuperar</button></Link> */}
+          placeholder="Digite seu e-mail" />
         <button type="submit">Recuperar</button>
       </form>
       <nav className="App-nav">
-                  <ul className="nav-list">
-                    <li><Link to="/area-portal">Voltar para Home</Link></li>
-                  </ul>
-                </nav>
+        <ul className="nav-list">
+          <li><Link to="/area-portal">Voltar para Home</Link></li>
+        </ul>
+      </nav>
     </div>
   );
 };

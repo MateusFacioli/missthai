@@ -34,7 +34,7 @@ export const getAlunos = async () => {
   }
 };
 
-  // Função para atualizar um aluno
+// Função para atualizar um aluno
 export const updateAluno = async (cpf, updatedData) => {
   const alunoRef = ref(db, 'alunos/' + cpf);
   await update(alunoRef, updatedData);
@@ -46,39 +46,39 @@ export const deleteAluno = async (cpf, email, password) => {
     const alunoRef = ref(db, 'alunos/' + cpf);
     const snapshot = await get(alunoRef);
     if (snapshot.exists()) {
-        const materiais = snapshot.val().materiais || {};
-        for (const key in materiais) {
-            await deleteFile(materiais[key].url);
-        }
+      const materiais = snapshot.val().materiais || {};
+      for (const key in materiais) {
+        await deleteFile(materiais[key].url);
+      }
     }
 
     // Remover o aluno do Realtime Database
     try {
-        await remove(alunoRef);
+      await remove(alunoRef);
     } catch (error) {
-        console.error('Erro ao remover aluno do Realtime Database:', error);
-        throw new Error('Erro ao remover aluno do Realtime Database.');
+      console.error('Erro ao remover aluno do Realtime Database:', error);
+      throw new Error('Erro ao remover aluno do Realtime Database.');
     }
 
     console.log('Aluno removido com sucesso.');
-} catch (error) {
+  } catch (error) {
     console.error('Erro ao remover aluno:', error);
     throw new Error('Erro ao remover aluno.');
-}
+  }
 };
 
 // Função para fazer o upload de múltiplos arquivos e armazenar no Realtime Database
 export const uploadFiles = async (cpf, files) => {
   const alunoRef = ref(db, 'alunos/' + cpf + '/materiais');
   const uploadPromises = Array.from(files).map(async (file) => {
-      const fileRef = storageRef(storage, `uploads/${cpf}/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const fileUrl = await getDownloadURL(fileRef);
-      const fileSize = file.size;
-      const lastModified = new Date().toISOString();
-      const newMaterialRef = ref(alunoRef, new Date().getTime().toString()); // Usando timestamp como chave única
-      await set(newMaterialRef, { url: fileUrl, tamanho: fileSize, ultimaVezEditado: lastModified, cpf: cpf });
-      return fileUrl;
+    const fileRef = storageRef(storage, `uploads/${cpf}/${file.name}`);
+    await uploadBytes(fileRef, file);
+    const fileUrl = await getDownloadURL(fileRef);
+    const fileSize = file.size;
+    const lastModified = new Date().toISOString();
+    const newMaterialRef = ref(alunoRef, new Date().getTime().toString()); // Usando timestamp como chave única
+    await set(newMaterialRef, { url: fileUrl, tamanho: fileSize, ultimaVezEditado: lastModified, cpf: cpf });
+    return fileUrl;
   });
   return Promise.all(uploadPromises);
 };
@@ -131,8 +131,8 @@ export const deleteMaterialFromAluno = async (cpf, materialKey) => {
   const materialRef = ref(db, 'alunos/' + cpf + '/materiais/' + materialKey);
   const snapshot = await get(materialRef);
   if (snapshot.exists()) {
-      const fileUrl = snapshot.val().url;
-      await deleteFile(fileUrl);
+    const fileUrl = snapshot.val().url;
+    await deleteFile(fileUrl);
   }
   await remove(materialRef);
 };

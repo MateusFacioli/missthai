@@ -25,10 +25,10 @@ const Contact = () => {
         </a>
       </div>
       <nav className="App-nav">
-                  <ul className="nav-list">
-                    <li><Link to="/area-portal">Voltar para Home</Link></li>
-                  </ul>
-                </nav>
+        <ul className="nav-list">
+          <li><Link to="/area-portal">Voltar para Home</Link></li>
+        </ul>
+      </nav>
     </div>
   );
 };

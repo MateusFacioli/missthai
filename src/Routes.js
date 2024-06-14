@@ -20,8 +20,8 @@ const Routes = () => (
       <Route path="/area-portal/contact" component={Contact} />
       <Route path="/area-portal/material" component={Materials} />
       <Route path="/area-portal/aboutme" component={AboutMe} />
-      <Route path ='/area-portal/payments' component={Payments} />
-      <Route path ='/area-portal/schedule' component={Schedule} />
+      <Route path='/area-portal/payments' component={Payments} />
+      <Route path='/area-portal/schedule' component={Schedule} />
       <Route path="/passwordrecovery" component={PasswordRecovery} />
     </Switch>
   </BrowserRouter>

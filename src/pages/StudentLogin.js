@@ -82,7 +82,7 @@ const StudentLogin = () => {
     const auth = getAuth();
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana/*, materiais */});
+      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana/*, materiais */ });
       alert('Registro bem-sucedido');
       navigate('/area-portal');
     } catch (error) {
@@ -90,17 +90,17 @@ const StudentLogin = () => {
       alert('Erro ao registrar');
       switch (error.code) {
         case 'auth/email-already-in-use':
-            setError('Este email já está em uso.');
-            break;
+          setError('Este email já está em uso.');
+          break;
         case 'auth/invalid-email':
-            setError('Email inválido.');
-            break;
+          setError('Email inválido.');
+          break;
         case 'auth/weak-password':
-            setError('A senha é muito fraca.');
-            break;
+          setError('A senha é muito fraca.');
+          break;
         default:
-            setError('Erro ao registrar. Tente novamente.');
-    }
+          setError('Erro ao registrar. Tente novamente.');
+      }
     }
   };
 
@@ -110,55 +110,55 @@ const StudentLogin = () => {
         <form onSubmit={handleRegisterSubmit}>
           <div>
             <label>Nome:</label>
-            <input 
-              type="text" 
-              name="name" 
-              value={name} 
+            <input
+              type="text"
+              name="name"
+              value={name}
               onChange={handleInputChange}
-              placeholder='Joao da Silva' 
+              placeholder='Joao da Silva'
               required />
           </div>
           <div>
             <label>CPF:</label>
-            <input 
-              type="text" 
-              name="cpf" 
-              value={cpf} 
+            <input
+              type="text"
+              name="cpf"
+              value={cpf}
               onChange={handleInputChange}
-              placeholder='12345678900' 
+              placeholder='12345678900'
               required />
           </div>
           {showFields && (
             <>
               <div>
                 <label>Email:</label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  value={email} 
+                <input
+                  type="email"
+                  name="email"
+                  value={email}
                   onChange={handleInputChange}
-                  placeholder='Seu melhor email'  
+                  placeholder='Seu melhor email'
                   required />
               </div>
               <div>
                 <label>Senha:</label>
-                <input 
-                  type="password" 
-                  name="password" 
-                  value={password} 
+                <input
+                  type="password"
+                  name="password"
+                  value={password}
                   onChange={handleInputChange}
-                  placeholder='Use uma senha forte'  
+                  placeholder='Use uma senha forte'
                   required />
               </div>
               <div>
                 <label>Vezes na Semana:</label>
-                <input 
-                  type="number" 
-                  name="vezesNaSemana" 
-                  value={vezesNaSemana} 
-                  onChange={handleInputChange} 
+                <input
+                  type="number"
+                  name="vezesNaSemana"
+                  value={vezesNaSemana}
+                  onChange={handleInputChange}
                   min="1"
-                  placeholder='Número de aulas'  
+                  placeholder='Número de aulas'
                   required />
               </div>
             </>
@@ -173,19 +173,19 @@ const StudentLogin = () => {
             <form onSubmit={handleLoginSubmit}>
               <div>
                 <label>Email:</label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  value={email} 
+                <input
+                  type="email"
+                  name="email"
+                  value={email}
                   onChange={handleInputChange}
                   required />
               </div>
               <div>
                 <label>Senha:</label>
-                <input 
-                  type="password" 
-                  name="password" 
-                  value={password} 
+                <input
+                  type="password"
+                  name="password"
+                  value={password}
                   onChange={handleInputChange}
                   required />
               </div>
