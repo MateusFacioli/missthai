@@ -1,14 +1,13 @@
 import { db, storage } from './firebaseConfig';
 import { ref, set, get, child, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
-import { getFirestore, collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { getAuth, deleteUser } from 'firebase/auth';
+import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
 
 //nao usado
 export const getMateriais = async () => {
   const db = getFirestore();
   const materiaisRef = collection(db, "uploads");
-  const q = query(materiaisRef, /*where("cpf", "==", cpf),*/ orderBy("lastModified", "desc"));
+  const q = query(materiaisRef, orderBy("lastModified", "desc"));
   const querySnapshot = await getDocs(q);
   const materiais = [];
   querySnapshot.forEach((doc) => {
@@ -136,7 +135,3 @@ export const deleteMaterialFromAluno = async (cpf, materialKey) => {
   }
   await remove(materialRef);
 };
-
-
-//ABORDAGEM NOVA SÓ PARA ARQUIVOS
-//https://firebase.google.com/docs/firestore/manage-data/add-data?hl=en#web

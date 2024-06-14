@@ -11,7 +11,6 @@ import AboutMe from './components/AboutMe';
 import Payments from './components/Payments';
 import Schedule from './components/Schedule';
 import PasswordRecovery from './components/PasswordRecovery';
-import ProtectedRoute from './ProtectedRoute';
 
 class App extends Component {
   render() {

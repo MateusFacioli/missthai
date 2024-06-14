@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import '../App.css';
-import { Link } from 'react-router-dom';
 import AdminLogin from './AdminLogin';
 import StudentLogin from './StudentLogin'
 class Home extends Component {

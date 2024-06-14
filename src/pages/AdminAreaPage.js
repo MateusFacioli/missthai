@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css';
-import { getAlunos, updateAluno, deleteAluno, uploadFiles, deleteMaterialFromAluno, getMateriais } from '../FirebaseService';
+import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno } from '../FirebaseService';
 import { storage } from '../firebaseConfig';
-import { getDownloadURL, ref, listAll, uploadBytesResumable, getStorage } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
 const AdminAreaPage = () => {
   const [alunos, setAlunos] = useState([]);//  O estado alunos é usado para armazenar a lista de alunos. O useEffect é utilizado para buscar os dados dos alunos quando o componente é montado.
@@ -18,27 +18,8 @@ const AdminAreaPage = () => {
       console.log(alunosData)
     };
     fetchAlunos();
+    setLoading(false);
   }, []);
-
-  //   useEffect(() => {
-  //     const fetchFiles = async () => {
-  //       if (!cpfs) return;
-  //     const storage = getStorage();
-  //     const listRef = ref(storage, `uploads/${cpfs}/`);
-  //     try{
-  //       const res = await listAll(listRef);
-  //       const filePromises = res.items.map((itemRef) => getDownloadURL(itemRef));
-  //       const fileUrls = await Promise.all(filePromises);
-  //       setFiles(fileUrls);
-
-  //     } catch (error) {
-  //       console.error("Erro ao listar arquivos: ", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchFiles();
-  // }, [cpfs]);
 
   const handleFileSelection = (event, cpf) => {
     const files = event.target.files;
@@ -157,6 +138,10 @@ const AdminAreaPage = () => {
     const number = parseInt(vezesNaSemana, 10);
     return number > 0;
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="App-header">
