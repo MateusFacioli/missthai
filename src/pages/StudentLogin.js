@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { addAluno } from '../FirebaseService';
+import StudentCpfLogged from '../components/StudentCpfLogged';
 
 const StudentLogin = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -54,8 +55,11 @@ const StudentLogin = () => {
     event.preventDefault();
     const auth = getAuth();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await  signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const cpfLogado = await StudentCpfLogged(user.email);
       console.log('Login bem-sucedido');
+      console.log("CPF DO ALUNO LOGADO", cpfLogado)
       navigate('/area-portal');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
@@ -81,9 +85,12 @@ const StudentLogin = () => {
 
     const auth = getAuth();
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana/*, materiais */ });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const cpfLogado = await StudentCpfLogged(user.email);
+      await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana});
       alert('Registro bem-sucedido');
+      console.log("CPF DO ALUNO LOGADO", cpfLogado)
       navigate('/area-portal');
     } catch (error) {
       console.error('Erro ao registrar:', error);
