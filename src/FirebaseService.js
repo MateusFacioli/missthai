@@ -1,20 +1,6 @@
 import { db, storage } from './firebaseConfig';
 import { ref, set, get, child, update, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
-import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
-
-//nao usado
-export const getMateriais = async () => {
-  const db = getFirestore();
-  const materiaisRef = collection(db, "uploads");
-  const q = query(materiaisRef, orderBy("lastModified", "desc"));
-  const querySnapshot = await getDocs(q);
-  const materiais = [];
-  querySnapshot.forEach((doc) => {
-    materiais.push({ id: doc.id, ...doc.data() });
-  });
-  return materiais;
-};
 
 // Função para adicionar um novo aluno
 export const addAluno = async (aluno) => {

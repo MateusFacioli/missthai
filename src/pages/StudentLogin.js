@@ -59,7 +59,7 @@ const StudentLogin = () => {
       const user = userCredential.user;
       const cpfLogado = await StudentCpfLogged(user.email);
       console.log('Login bem-sucedido');
-      console.log("CPF DO ALUNO LOGADO", cpfLogado)
+      console.log("DADOS DO ALUNO LOGADO", cpfLogado, user.email);
       navigate('/area-portal');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
@@ -71,15 +71,15 @@ const StudentLogin = () => {
     event.preventDefault();
 
     if (!validateCPF(cpf)) {
-      setError('CPF inválido. Deve conter exatamente 11 dígitos.');
+      alert('CPF inválido. Deve conter exatamente 11 dígitos.');
       return;
     }
     if (!validateEmail(email)) {
-      setError('Email inválido.');
+      alert('Email inválido.');
       return;
     }
     if (!validateVezesNaSemana(vezesNaSemana)) {
-      setError('Vezes na Semana deve ser um número positivo.');
+      alert('Vezes na Semana deve ser um número positivo.');
       return;
     }
 
@@ -87,26 +87,26 @@ const StudentLogin = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const cpfLogado = await StudentCpfLogged(user.email);
       await addAluno({ nome: name, cpf, email, senha: password, vezesNaSemana});
+      await StudentCpfLogged(email);
       alert('Registro bem-sucedido');
-      console.log("CPF DO ALUNO LOGADO", cpfLogado)
+      console.log("CPF DO ALUNO LOGADO", cpf);
       navigate('/area-portal');
     } catch (error) {
       console.error('Erro ao registrar:', error);
       alert('Erro ao registrar');
       switch (error.code) {
         case 'auth/email-already-in-use':
-          setError('Este email já está em uso.');
+          alert('Este email já está em uso.');
           break;
         case 'auth/invalid-email':
-          setError('Email inválido.');
+          alert('Email inválido.');
           break;
         case 'auth/weak-password':
-          setError('A senha é muito fraca.');
+          alert('A senha é muito fraca.');
           break;
         default:
-          setError('Erro ao registrar. Tente novamente.');
+          alert('Erro ao registrar. Tente novamente.');
       }
     }
   };
