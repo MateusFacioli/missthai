@@ -10,12 +10,15 @@ const AdminAreaPage = () => {
   const [uploadProgress, setUploadProgress] = useState({});
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const fetchAlunos = async () => {
       const alunosData = await getAlunos();
       setAlunos(alunosData);
-      console.log(alunosData)
+      console.log(alunosData);
+      const totalSum = alunosData.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
+      setTotal(totalSum);
     };
     fetchAlunos();
     setLoading(false);
@@ -102,8 +105,12 @@ const AdminAreaPage = () => {
     }
     try {
       await updateAluno(cpf, { vezesNaSemana });
-      const alunosData = await getAlunos();
-      setAlunos(alunosData);
+      const updatedAlunos = alunos.map(aluno => 
+        aluno.cpf === cpf ? { ...aluno, vezesNaSemana } : aluno
+      );
+      setAlunos(updatedAlunos);
+      const totalSum = updatedAlunos.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
+      setTotal(totalSum);
     } catch (error) {
       console.error('Erro ao atualizar vezes na semana:', error);
       alert('Erro ao atualizar vezes na semana.');
@@ -115,8 +122,10 @@ const AdminAreaPage = () => {
     if (confirmDelete) {
       try {
         await deleteAluno(cpf, email, password);
-        const alunosData = await getAlunos();
-        setAlunos(alunosData);
+        const updatedAlunos = alunos.filter(aluno => aluno.cpf !== cpf);
+        setAlunos(updatedAlunos);
+        const totalSum = updatedAlunos.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
+        setTotal(totalSum);
         alert('Aluno excluído com sucesso!');
       } catch (error) {
         console.error('Erro ao excluir aluno:', error);
@@ -200,17 +209,14 @@ const AdminAreaPage = () => {
                 </td>
                 <td>
                   <button onClick={() => handleUpdateVezesSemanaAluno(aluno.cpf, prompt('Digite o novo valor de vezes na semana:', aluno.vezesNaSemana))}>Atualizar Vezes na Semana</button>
-                  {alunos.map((aluno) => (
-                    <ul key={aluno.cpf}>
-                      <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>Excluir aluno</button>
-                    </ul>
-                  ))}
+                  <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>Excluir aluno</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+      <h2>Total geral: R${total}</h2>
     </div>
   );
 };
