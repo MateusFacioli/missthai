@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
-import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno } from '../FirebaseService';
+import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno, getMateriaisAluno } from '../FirebaseService';
 import { storage } from '../firebaseConfig';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 
@@ -14,11 +14,19 @@ const AdminAreaPage = () => {
 
   useEffect(() => {
     const fetchAlunos = async () => {
-      const alunosData = await getAlunos();
-      setAlunos(alunosData);
-      console.log(alunosData);
-      const totalSum = alunosData.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
-      setTotal(totalSum);
+      try {
+        const alunosData = await getAlunos();
+        // const alunosWithFiles = await Promise.all(alunosData.map(async (aluno) => {
+        // const arquivos = await getMateriaisAluno(aluno.cpf);
+        // return { ...aluno, arquivos };
+        // }));
+        // setAlunos(alunosWithFiles);
+        setAlunos(alunosData);
+        const totalSum = alunosData.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
+        setTotal(totalSum);
+      } catch (error) {
+        alert(error.message);
+      }
     };
     fetchAlunos();
     setLoading(false);
@@ -105,7 +113,7 @@ const AdminAreaPage = () => {
     }
     try {
       await updateAluno(cpf, { vezesNaSemana });
-      const updatedAlunos = alunos.map(aluno => 
+      const updatedAlunos = alunos.map(aluno =>
         aluno.cpf === cpf ? { ...aluno, vezesNaSemana } : aluno
       );
       setAlunos(updatedAlunos);
@@ -137,7 +145,7 @@ const AdminAreaPage = () => {
           alert('Erro ao remover aluno do Firebase Authentication.');
         } else {
           console.log(error);
-          alert('Erro ao excluir aluno vix');
+          alert('Erro ao excluir aluno');
         }
       }
     }
@@ -177,23 +185,23 @@ const AdminAreaPage = () => {
                 <td>{aluno.vezesNaSemana}</td>
                 <td>R${295 * aluno.vezesNaSemana}</td>
                 <td>
-                  {files.map((fileUrl, index) => (
-                    <li index={index}>
-                      <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-                        Ver Material
-                        {fileUrl}
-                      </a>
-                      <button onClick={() => handleFileDelete(aluno.cpf, index)}>Remover Material</button>
-                    </li>
-                  ))}
-                  {aluno.materiais ? (
-                    Object.keys(aluno.materiais).map((key) => (
-                      <div key={key}>
-                        <a href={aluno.materiais[key].url} target="_blank" rel="noopener noreferrer">Ver Material</a>
-                        <button onClick={() => handleFileDelete(aluno.cpf, key)}>Remover Material</button>
-                      </div>
-                    ))
+                  {files.length === 0 ? (
+                    <p>Sem arquivos</p>
                   ) : (
+                    <ul>
+                      {files.map((file, index) => (
+                        <li index={index}>
+                          <span>{file.name}</span> - <span>{new Date(file.ultimaVezEditado).toLocaleString()}</span>
+                          <a href={file.url} target="_blank" rel="noopener noreferrer">
+                            <button>Ver Arquivo</button> </a>
+                          <button onClick={() => handleFileDelete(aluno.cpf, index)}>Remover Material</button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
+                <td>
+                  {
                     <div>
                       <input type="file" multiple onChange={(event) => handleFileSelection(event, aluno.cpf)} />
                       <button onClick={() => handleFileUpload(aluno.cpf)}>Upload</button>
@@ -205,9 +213,7 @@ const AdminAreaPage = () => {
                           </div>
                         ))}
                     </div>
-                  )}
-                </td>
-                <td>
+                  }
                   <button onClick={() => handleUpdateVezesSemanaAluno(aluno.cpf, prompt('Digite o novo valor de vezes na semana:', aluno.vezesNaSemana))}>Atualizar Vezes na Semana</button>
                   <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>Excluir aluno</button>
                 </td>

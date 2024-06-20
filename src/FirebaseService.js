@@ -1,6 +1,6 @@
 import { db, storage } from './firebaseConfig';
 import { ref, set, get, child, update, remove } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL, listAll, deleteObject, getMetadata } from 'firebase/storage';
 
 // Função para adicionar um novo aluno
 export const addAluno = async (aluno) => {
@@ -87,7 +87,7 @@ export const getMateriaisAluno = async (cpf) => {
     const materiais = await Promise.all(
       res.items.map(async (itemRef) => {
         const url = await getDownloadURL(itemRef);
-        const metadata = await itemRef.getMetadata();
+        const metadata = await getMetadata(itemRef);
         return {
           name: itemRef.name,
           url,
@@ -100,7 +100,7 @@ export const getMateriaisAluno = async (cpf) => {
     return materiais;
   } catch (error) {
     console.error('Erro ao obter materiais do aluno:', error);
-    alert('Erro ao obter materiais do aluno:', error);
+    //alert('Erro ao obter materiais do aluno:', error);
     throw error;
   }
 };
