@@ -71,37 +71,35 @@ export const uploadFiles = async (cpf, files) => {
 // Função para obter os materiais de um aluno específico diretamente do Storage
 export const getMateriaisAluno = async (cpf) => {
   if (!cpf) {
-    alert('CPF não fornecido');
-    throw new Error('CPF não fornecido');
+    console.log('CPF não fornecido');
+    return [];
   }
 
   try {
-    const listRef = ref(storage, `uploads/${cpf}/`);
-    const res = await listAll(listRef);
+    const storageRef = ref(storage, `uploads/${cpf}`);
+    const result = await listAll(storageRef);
 
-    if (res.items.length === 0) {
+    if (result.items.length === 0) {
       alert('Nenhum material encontrado para este aluno!');
-      throw new Error('Nenhum material encontrado para este aluno!');
+      console.log('Nenhum material encontrado para este aluno!');
+      return [];
     }
-
-    const materiais = await Promise.all(
-      res.items.map(async (itemRef) => {
-        const url = await getDownloadURL(itemRef);
+    
+    const arquivosData = await Promise.all(result.items.map(async (itemRef) => {
+      try {
         const metadata = await getMetadata(itemRef);
-        return {
-          name: itemRef.name,
-          url,
-          tamanho: metadata.size,
-          ultimaVezEditado: metadata.updated,
-        };
-      })
-    );
+        const url = await getDownloadURL(itemRef);
+        return { name: metadata.name, size: metadata.size, updated: metadata.updated, url };
+      } catch (error) {
+        console.log("Erro ao obter metadados ou url do arquivo:", error);
+        return [];
+      }
+    }));
 
-    return materiais;
+    return arquivosData;
   } catch (error) {
-    console.error('Erro ao obter materiais do aluno:', error);
-    //alert('Erro ao obter materiais do aluno:', error);
-    throw error;
+    console.log("Erro ao listar arquivos no Firebase Storage:", error);
+    return [];
   }
 };
 

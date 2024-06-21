@@ -5,6 +5,7 @@ import { formatFileSize } from '../utils/Utils';
 import { Link } from 'react-router-dom';
 import { storage } from '../firebaseConfig';
 import '../App.css';
+import NavBar from './NavBar';
 
 const Materials = () => {
   const [arquivos, setArquivos] = useState([]);
@@ -97,11 +98,7 @@ const Materials = () => {
           </tbody>
         </table>
       )}
-      <nav className="App-nav">
-        <ul className="nav-list">
-          <li><Link to="/area-portal">Voltar para Home</Link></li>
-        </ul>
-      </nav>
+      <NavBar/>
     </div>
   );
 };

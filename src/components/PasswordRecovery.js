@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { Link } from 'react-router-dom';
 import '../App.css';
+import NavBar from './NavBar';
 
 const PasswordRecovery = () => {
   const [email, setEmail] = useState('');
@@ -33,11 +34,7 @@ const PasswordRecovery = () => {
           placeholder="Digite seu e-mail" />
         <button type="submit">Recuperar</button>
       </form>
-      <nav className="App-nav">
-        <ul className="nav-list">
-          <li><Link to="/area-portal">Voltar para Home</Link></li>
-        </ul>
-      </nav>
+      <NavBar/>
     </div>
   );
 };

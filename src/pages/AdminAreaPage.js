@@ -3,12 +3,14 @@ import '../App.css';
 import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno, getMateriaisAluno } from '../FirebaseService';
 import { storage } from '../firebaseConfig';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { formatFileSize } from '../utils/Utils';
+import Files from '../components/Files';
 
 const AdminAreaPage = () => {
   const [alunos, setAlunos] = useState([]);//  O estado alunos é usado para armazenar a lista de alunos. O useEffect é utilizado para buscar os dados dos alunos quando o componente é montado.
   const [selectedFiles, setSelectedFiles] = useState({});
   const [uploadProgress, setUploadProgress] = useState({});
-  const [files, setFiles] = useState([]);
+  const [arquivos, setArquivos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
@@ -16,11 +18,6 @@ const AdminAreaPage = () => {
     const fetchAlunos = async () => {
       try {
         const alunosData = await getAlunos();
-        // const alunosWithFiles = await Promise.all(alunosData.map(async (aluno) => {
-        // const arquivos = await getMateriaisAluno(aluno.cpf);
-        // return { ...aluno, arquivos };
-        // }));
-        // setAlunos(alunosWithFiles);
         setAlunos(alunosData);
         const totalSum = alunosData.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
         setTotal(totalSum);
@@ -30,6 +27,33 @@ const AdminAreaPage = () => {
     };
     fetchAlunos();
     setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const allArquivos = await Promise.all(
+          alunos.map(async (aluno) => {
+            try {
+              const arquivosAluno = await getMateriaisAluno(aluno.cpf);
+              console.log("chamada getmateriais aluno", arquivosAluno);
+              return arquivosAluno.map(arquivo => ({ ...arquivo, cpf: aluno.cpf }));
+            } catch (error) {
+              console.log('Erro ao obter materiais do aluno: adminareapage', error);
+              return { ...aluno, arquivos: [] };
+            }
+          })
+        );
+
+        setArquivos(allArquivos.flat());
+      } catch (error) {
+        console.log(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
   }, []);
 
   const handleFileSelection = (event, cpf) => {
@@ -185,20 +209,7 @@ const AdminAreaPage = () => {
                 <td>{aluno.vezesNaSemana}</td>
                 <td>R${295 * aluno.vezesNaSemana}</td>
                 <td>
-                  {files.length === 0 ? (
-                    <p>Sem arquivos</p>
-                  ) : (
-                    <ul>
-                      {files.map((file, index) => (
-                        <li index={index}>
-                          <span>{file.name}</span> - <span>{new Date(file.ultimaVezEditado).toLocaleString()}</span>
-                          <a href={file.url} target="_blank" rel="noopener noreferrer">
-                            <button>Ver Arquivo</button> </a>
-                          <button onClick={() => handleFileDelete(aluno.cpf, index)}>Remover Material</button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <Files cpf={aluno.cpf} />
                 </td>
                 <td>
                   {

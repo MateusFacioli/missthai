@@ -3,6 +3,7 @@ import '../App.css';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faWhatsapp, faLinkedin } from '@fortawesome/free-brands-svg-icons';
+import NavBar from './NavBar';
 
 
 const Contact = () => {
@@ -24,11 +25,7 @@ const Contact = () => {
           <FontAwesomeIcon icon={faLinkedin} size="3x" />
         </a>
       </div>
-      <nav className="App-nav">
-        <ul className="nav-list">
-          <li><Link to="/area-portal">Voltar para Home</Link></li>
-        </ul>
-      </nav>
+     <NavBar/>
     </div>
   );
 };
