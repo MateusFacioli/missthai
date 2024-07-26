@@ -122,3 +122,43 @@
   color: #e01e79;
   /*  rosa pink Cor dos ícones ao passar o mouse */
 }
+
+.react-calendar__tile--conflict {
+  background: red !important;
+  color: white !important;
+}
+
+.react-calendar__tile--available {
+  background: green !important;
+  color: white !important;
+}
+
+.react-calendar__tile--professor-restriction {
+  background: blue !important;
+  color: white !important;
+}
+
+.react-calendar__tile--weekend {
+  /* background: gray !important;  */
+  color: white !important;
+  /* display: none !important; */
+  /* visibility: hidden; */
+}
+
+.react-calendar__tile--weekday { 
+  font-family: 'Arial', sans-serif; 
+  font-size: 16px;
+  color: blue; 
+}
+
+.react-calendar__tile--today {
+  background: orange !important;
+  color: white !important;
+}
+
+.react-calendar__tile--disabled {
+  background: gray !important;
+  color: white !important;
+  pointer-events: none;
+  visibility: hidden;
+}
