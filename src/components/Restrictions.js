@@ -6,14 +6,15 @@ import moment from 'moment';
 import 'moment/locale/pt-br';
 import { Link } from 'react-router-dom';
 import NavBar from './NavBar';
+import { isDisabled } from '@testing-library/user-event/dist/utils';
 
 //criar botao de salvar, salvar no banco
 //mostrar prof azul ?
-//os dias do prof nao estao mostrando
+//os dias do prof nao estao mostrando pq adiciono segundas e nao datas
 //card do horário selecionado não muda de cor
-//blocos de horário não muda de cor
-//mostrar somente 1 ano por vezes
-//deixar cinza os dias anteriores ao atual
+//blocos de horário não muda de cor alunos podem ter as mesmas restricoes
+//ao clicar em hoje na visao de anos ou mes ir para o mes corrente e nao para janeiro 
+
 
 moment.locale('pt-br');//traduzir selectedDate
 
@@ -30,7 +31,7 @@ const Container = styled.div`
 const TodayButton = styled.button` 
 margin: 10px; 
 padding: 10px; 
-background-color: black; 
+background-color: orange; 
 color: white; 
 border: none; 
 border-radius: 5px; 
@@ -43,7 +44,7 @@ const Card = styled.div`
   padding: 10px;
   margin: 10px;
   border-radius: 10px;
-  background-color: ${props => (props.conflict ? 'red' : 'green')};
+  background-color: green;
   color: white;
   text-align: center;
   position: relative;
@@ -73,18 +74,19 @@ const TimeSlot = styled.div`
 const TimeButton = styled.button`
   margin: 5px;
   padding: 10px;
-  background-color: ${props => (props.selected ? 'green' : props.red ? 'red' : props.professor ? 'blue' : 'gray')};
+  background-color: ${props => (props.selected ? 'green' : props.red ? 'red'  : 'gray')};
   color: white;
   border: none;
   border-radius: 100px;
-  cursor: pointer;
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${props => (props.disabled ? 0.5 : 1)};
   &:hover {
-    background-color: ${props => (props.selected ? 'darkgreen' : props.red ? 'darkred' : props.professor ? 'darkblue' : 'darkgray')};
+    background-color: ${props => (props.selected ? 'darkgreen' : props.red ? 'darkred' : 'darkgray')};
   }
 `;
 
 //RESTRIÇÕES
-const generateProfessorRestrictions = () => {
+/*const generateProfessorRestrictions = () => {
   const restrictions = [];
   const currentYear = new Date().getFullYear();
   // const currentMonth = new Date().getMonth();
@@ -113,41 +115,43 @@ const generateProfessorRestrictions = () => {
 };
 
 const professorRestrictions = generateProfessorRestrictions();
+*/
 
-
-const Restrictions = ({ professorRestrictions = [] }) => {
+const Restrictions = ({ /*professorRestrictions = []*/}) => {
   const [studentAvailability, setStudentAvailability] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const formattedDate = selectedDate ? moment(selectedDate).format('DD [de] MMMM [de] YYYY') : '';
+  const formattedDate = selectedDate ? moment(selectedDate).format('dddd, DD [de] MMMM [de] YYYY') : '';
   const [view, setView] = useState('month'); // Adiciona o estado da visão
+
+  const [activeStartDate, setActiveStartDate] = useState(new Date()); // Estado para armazenar a data de início ativa
+
   const currentYear = new Date().getFullYear();
   const minDate = new Date(currentYear, 0, 1);
   const maxDate = new Date(currentYear, 11, 31);
-  const today = new Date();
 
-  const isProfessorRestriction = (dateTime) => {
-    return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
-  };
+  const today = new Date();
+  const currentMonth = activeStartDate.getMonth();
+  const todayMonth = today.getMonth();
+  const todayYear = today.getFullYear();
+
+  // const isProfessorRestriction = (dateTime) => {
+  //   return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
+  // };
 
   //HANDLE'S
   const handleDateChange = (date) => {
     setSelectedDate(date); 
   };
 
-  //na visao de anos está indo para 01/01/2021
   const handleTodayClick = () => {
-    const today = new Date();
-    const currentMonth = selectedDate.getMonth(); 
-    const todayMonth = today.getMonth();
 
-     if (view === 'month' && currentMonth !== todayMonth) {
-      setSelectedDate(today);
-      setView('month'); // Muda a visão para o mês
+    if (currentMonth !== todayMonth || currentYear !== todayYear) {
+      setActiveStartDate(today); // Atualiza a data de início ativa para o mês atual
+      console.log(currentMonth);
+      console.log(todayMonth);
     }
-    else {
-      setSelectedDate(today);
-      setView('month');
-    }
+    setSelectedDate(today);
+    setView('month'); // Muda a visão para o mês
   };
 
   const handleTimeSelect = (time) => {
@@ -171,9 +175,9 @@ const Restrictions = ({ professorRestrictions = [] }) => {
   };
 
   //FUNCTIONS
-  const checkConflict = (dateTime) => {
-    return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
-  };
+  // const checkConflict = (dateTime) => {
+  //   return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
+  // };
 
   const removeDateTime = (dateTimeToRemove) => {
     const dateKey = dateTimeToRemove.toDateString();
@@ -197,40 +201,53 @@ const Restrictions = ({ professorRestrictions = [] }) => {
 //DOM - HTML
   return (
     <Container>
-      <h2>Selecione suas indisponibilidades</h2>
+      <h2>Selecione suas Disponibilidades</h2>
       <TodayButton onClick={handleTodayClick}>Hoje</TodayButton>
-      <Calendar onClickDay={handleDateChange}
+      <Calendar 
+      onClickDay={handleDateChange}
       value={selectedDate} 
       view={view} // Define a visão atual 
-      onActiveStartDateChange={({ activeStartDate, view }) => setView(view)} // Atualiza a visão ao mudar
+      onActiveStartDateChange={({ activeStartDate, view }) => {
+        setView(view);
+        setActiveStartDate(activeStartDate);
+       }}
       tileClassName={({ date, view }) => {
         const day = date.getDay();
+
+        //VISUAL
           if (view === 'month') {
             
-            if (date < today) {  //dias anteriores que hoje sao desativados
-              return 'react-calendar__tile--disabled'; 
-            }
-            if (day === 0 || day === 6) {//deixando cinza sabado e domingo e removendo
-              return 'react-calendar__tile--weekend';
-            }
-            // if (day >= 1 && day <= 5) { // Dias da semana (segunda a sexta-feira) 
-            //   return 'react-calendar__tile--weekday'; 
-            // }
-
-            if (professorRestrictions.some(restriction => restriction.getTime() === date.getTime())) {
-              return 'react-calendar__tile--professor-restriction';
-             }
-             if (moment(date).isSame(new Date(), 'day')) {
+            if (moment(date).isSame(new Date(), 'day')) { //dia de hoje laranja
               return 'react-calendar__tile--today';
             } 
-             return null;
+            
+            if (day === 0 || day === 6) {//deixando vermelho sabado, domingo e desativando
+              return 'react-calendar__tile--weekend';
+            }
+            if (date < today ) {  //dias anteriores que hoje sao desativados
+              return 'react-calendar__tile--disabled'; 
+            }
+            if (day >= 1 && day <= 5) { // Dias da semana (segunda a sexta-feira)
+              return 'react-calendar__tile--weekday'; 
+            }
+            // if (professorRestrictions.some(restriction => restriction.getTime() === date.getTime())) {
+            //   return 'react-calendar__tile--professor-restriction';
+            //  }
+          } else if (view === 'year') {
+            return 'react-calendar__tile--month'; // Adiciona  o apontador de cursor
           }
         }}
-        tileDisabled={({ date, view }) => view === 'month' && date < today && (date.getDay() === 0 || date.getDay() === 6)}//desativando sabado e domingo
+
+        //CONFIGS
+        tileDisabled={({ date, view }) => view === 'month'  
+        && (date < today && !moment(date).isSame(new Date(), 'day') 
+        || date.getDay() === 0 || date.getDay() === 6)}//desativando sabado, domingo e anteriores a hoje
         minDate={minDate}
         maxDate={maxDate}
         showNeighboringMonth = {false}
         showWeekNumbers = {false}
+        defaultView="month" // Define a visão padrão como mês 
+        maxDetail="month" // Limita a visão máxima para mês
         locale = {'pt-BR'}
       />
       {selectedDate && (
@@ -242,13 +259,17 @@ const Restrictions = ({ professorRestrictions = [] }) => {
               dateTime.setHours(time.hours, time.minutes, 0, 0);
               const dateKey = selectedDate.toDateString();
               const selectedTimesForDate = studentAvailability[dateKey] || [];
+              const isDisabled = (time.hours === 12 && time.minutes === 0) 
+              || (time.hours === 12 && time.minutes === 30) 
+              || (time.hours === 13 && time.minutes === 0);
               return (
                 <TimeButton
                   key={index}
                   selected={selectedTimesForDate.some(t => t.getHours() === time.hours && t.getMinutes() === time.minutes)}
-                  red={time.hours === 12 && time.minutes === 0}
-                  professor={isProfessorRestriction(dateTime)}
-                  onClick={() => handleTimeSelect(time)}
+                  red={isDisabled}
+                  // professor={isProfessorRestriction(dateTime)}
+                  disabled={isDisabled} //hora almoço
+                  onClick={() => !isDisabled && handleTimeSelect(time)}
                 >
                   {`${time.hours}:${time.minutes === 0 ? '00' : time.minutes}`}
                 </TimeButton>
@@ -258,11 +279,11 @@ const Restrictions = ({ professorRestrictions = [] }) => {
 
         </>
       )}
-      <h2>Suas Indisponibilidades</h2>
+      <h2>Suas Disponibilidades</h2>
     
     {Object.keys(studentAvailability).map(dateKey => ( 
       studentAvailability[dateKey].map((dateTime, index) => ( 
-      <Card key={index} conflict={checkConflict(dateTime)}> 
+      <Card key={index} /*conflict={checkConflict(dateTime)} */> 
       {dateTime.toLocaleString()} 
       <RemoveButton onClick={() => removeDateTime(dateTime)}>X</RemoveButton> 
       </Card> 

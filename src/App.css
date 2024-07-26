@@ -139,26 +139,31 @@
 }
 
 .react-calendar__tile--weekend {
-  /* background: gray !important;  */
-  color: white !important;
+  background: lightpink !important; 
+  cursor: not-allowed;
+  /* color: white !important; */
   /* display: none !important; */
   /* visibility: hidden; */
 }
 
 .react-calendar__tile--weekday { 
-  font-family: 'Arial', sans-serif; 
-  font-size: 16px;
-  color: blue; 
+  cursor: pointer;
 }
 
 .react-calendar__tile--today {
   background: orange !important;
   color: white !important;
+  cursor: pointer;
 }
 
 .react-calendar__tile--disabled {
-  background: gray !important;
-  color: white !important;
-  pointer-events: none;
-  visibility: hidden;
+  color: lightgray !important;
+  cursor:not-allowed;
+  /* background: lightgray !important; */
+  /* pointer-events: none; */
+  /* visibility: hidden; */
+}
+
+.react-calendar__tile--month { 
+  cursor: pointer;
 }
