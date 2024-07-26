@@ -133,11 +133,6 @@
   color: white !important;
 }
 
-.react-calendar__tile--professor-restriction {
-  background: blue !important;
-  color: white !important;
-}
-
 .react-calendar__tile--weekend {
   background: lightpink !important; 
   cursor: not-allowed;

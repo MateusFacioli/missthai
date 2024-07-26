@@ -9,12 +9,11 @@ import NavBar from './NavBar';
 import { isDisabled } from '@testing-library/user-event/dist/utils';
 
 //criar botao de salvar, salvar no banco
-//mostrar prof azul ?
-//os dias do prof nao estao mostrando pq adiciono segundas e nao datas
 //card do horário selecionado não muda de cor
 //blocos de horário não muda de cor alunos podem ter as mesmas restricoes
 //ao clicar em hoje na visao de anos ou mes ir para o mes corrente e nao para janeiro 
-
+//colocar filtros de toda segunda horario x, todo dia horario y ...
+//ADMIN AO VER TODAS AS DISPONIBILIDADES DE ALUNOS PODERÁ ARRASTAR NO VERDE (AVISAR ALUNOS ALTERADOS), SE VERMELHO NAO MOVER
 
 moment.locale('pt-br');//traduzir selectedDate
 
@@ -74,7 +73,7 @@ const TimeSlot = styled.div`
 const TimeButton = styled.button`
   margin: 5px;
   padding: 10px;
-  background-color: ${props => (props.selected ? 'green' : props.red ? 'red'  : 'gray')};
+  background-color: ${props => (props.selected ? 'green' : props.red ? 'red' : 'gray')};
   color: white;
   border: none;
   border-radius: 100px;
@@ -86,79 +85,46 @@ const TimeButton = styled.button`
 `;
 
 //RESTRIÇÕES
-/*const generateProfessorRestrictions = () => {
-  const restrictions = [];
-  const currentYear = new Date().getFullYear();
-  // const currentMonth = new Date().getMonth();
-  // const currentDay = new Date().getDay();
-  // const startDate = new Date(currentYear, currentMonth, currentDay);
-  const startDate = new Date(currentYear, 0, 1);
-  const endDate = new Date(currentYear, 11, 31);
 
-  for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-    const day = date.getDay();
-    if (day === 1 || day === 2) { // Monday or Tuesday
-      for (let hour = 7; hour <= 19; hour++) {
-        restrictions.push(new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0));
-        restrictions.push(new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 30));
-      }
-    } else if (day === 3 || day === 4) { // Wednesday or Thursday
-      for (let hour = 7; hour <= 17; hour++) {
-        restrictions.push(new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0));
-        restrictions.push(new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 30));
-      }
-    }
-    // No restrictions for Friday (day === 5)
-  }
-
-  return restrictions;
-};
-
-const professorRestrictions = generateProfessorRestrictions();
-*/
-
-const Restrictions = ({ /*professorRestrictions = []*/}) => {
+const Restrictions = () => {
   const [studentAvailability, setStudentAvailability] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
   const formattedDate = selectedDate ? moment(selectedDate).format('dddd, DD [de] MMMM [de] YYYY') : '';
-  const [view, setView] = useState('month'); // Adiciona o estado da visão
 
+  const [view, setView] = useState('month'); // Adiciona o estado da visão
   const [activeStartDate, setActiveStartDate] = useState(new Date()); // Estado para armazenar a data de início ativa
 
-  const currentYear = new Date().getFullYear();
-  const minDate = new Date(currentYear, 0, 1);
-  const maxDate = new Date(currentYear, 11, 31);
-
   const today = new Date();
+  // const currentMonth = activeStartDate instanceof Date ? activeStartDate.getMonth() : today.getMonth();
   const currentMonth = activeStartDate.getMonth();
   const todayMonth = today.getMonth();
+  const currentYear = activeStartDate.getFullYear();
   const todayYear = today.getFullYear();
+  const currentDay = today.getDay();
 
-  // const isProfessorRestriction = (dateTime) => {
-  //   return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
-  // };
+  const minDate = new Date(todayYear, 0, 1);
+  const maxDate = new Date(todayYear, 11, 31);
 
   //HANDLE'S
   const handleDateChange = (date) => {
-    setSelectedDate(date); 
+    setSelectedDate(date);
   };
 
   const handleTodayClick = () => {
 
     if (currentMonth !== todayMonth || currentYear !== todayYear) {
       setActiveStartDate(today); // Atualiza a data de início ativa para o mês atual
-      console.log(currentMonth);
-      console.log(todayMonth);
     }
     setSelectedDate(today);
     setView('month'); // Muda a visão para o mês
+    setActiveStartDate(today);
   };
 
   const handleTimeSelect = (time) => {
     const dateTime = new Date(selectedDate);
     dateTime.setHours(time.hours, time.minutes, 0, 0);
 
-    const dateKey = selectedDate.toDateString(); 
+    const dateKey = selectedDate.toDateString();
     const selectedTimesForDate = studentAvailability[dateKey] || [];
 
     if (!selectedTimesForDate.some(t => t.getTime() === dateTime.getTime())) {
@@ -175,9 +141,6 @@ const Restrictions = ({ /*professorRestrictions = []*/}) => {
   };
 
   //FUNCTIONS
-  // const checkConflict = (dateTime) => {
-  //   return professorRestrictions.some(restriction => restriction.getTime() === dateTime.getTime());
-  // };
 
   const removeDateTime = (dateTimeToRemove) => {
     const dateKey = dateTimeToRemove.toDateString();
@@ -187,87 +150,107 @@ const Restrictions = ({ /*professorRestrictions = []*/}) => {
     });
   };
 
-  const generateTimeSlots = () => {
+  //RESTRIÇOES PROFESSOR
+  const generateTimeSlots = (selectedDate) => {
     const slots = [];
-    for (let hour = 7; hour <= 19; hour++) {
-      slots.push({ hours: hour, minutes: 0 });
-      if (hour !== 19) { 
-        slots.push({ hours: hour, minutes: 30 }); 
-      } 
-    } 
-    return slots; 
+    const day = selectedDate.getDay();
+
+    if (day === 1 || day === 2) { // Segunda ou Terça
+      for (let hour = 7; hour <= 19; hour++) {
+        slots.push({ hours: hour, minutes: 0 });
+        if (hour !== 19) {
+          slots.push({ hours: hour, minutes: 30 });
+        }
+      }
+    } else if (day === 3 || day === 4) { // Quarta ou Quinta
+      for (let hour = 7; hour <= 17; hour++) {
+        slots.push({ hours: hour, minutes: 0 });
+        if (hour !== 17) {
+          slots.push({ hours: hour, minutes: 30 });
+        }
+      }
+    } else if (day === 5) { // Sexta
+      // Não adicionar nenhum horário
+    }
+    return slots;
   };
 
-//DOM - HTML
+  //DOM - HTML
   return (
     <Container>
       <h2>Selecione suas Disponibilidades</h2>
       <TodayButton onClick={handleTodayClick}>Hoje</TodayButton>
-      <Calendar 
-      onClickDay={handleDateChange}
-      value={selectedDate} 
-      view={view} // Define a visão atual 
-      onActiveStartDateChange={({ activeStartDate, view }) => {
-        setView(view);
-        setActiveStartDate(activeStartDate);
-       }}
-      tileClassName={({ date, view }) => {
-        const day = date.getDay();
+      <Calendar
+        onClickDay={handleDateChange}
+        value={selectedDate}
+        view={view} // Define a visão atual 
+        onActiveStartDateChange={({ activeStartDate, view }) => {
+          setView(view);
+          setActiveStartDate(activeStartDate);
+        }}
 
         //VISUAL
+        tileClassName={({ date, view }) => {
+          const day = date.getDay();
+
           if (view === 'month') {
-            
-            if (moment(date).isSame(new Date(), 'day')) { //dia de hoje laranja
+
+            if (moment(date).isSame(new Date(), 'day')) {
+              //dia de hoje laranja
               return 'react-calendar__tile--today';
-            } 
-            
-            if (day === 0 || day === 6) {//deixando vermelho sabado, domingo e desativando
+            }
+
+            if (day === 0 || day === 6) {
+              //desativando e deixando vermelho sabado, domingo
               return 'react-calendar__tile--weekend';
             }
-            if (date < today ) {  //dias anteriores que hoje sao desativados
-              return 'react-calendar__tile--disabled'; 
+            if (date < today) {
+              //dias anteriores que hoje sao desativados 
+              return 'react-calendar__tile--disabled';
             }
-            if (day >= 1 && day <= 5) { // Dias da semana (segunda a sexta-feira)
-              return 'react-calendar__tile--weekday'; 
+            if (day >= 1 && day <= 5) {
+              // Dias da semana (segunda a sexta-feira) add o cursor
+              return 'react-calendar__tile--weekday';
             }
-            // if (professorRestrictions.some(restriction => restriction.getTime() === date.getTime())) {
-            //   return 'react-calendar__tile--professor-restriction';
-            //  }
-          } else if (view === 'year') {
-            return 'react-calendar__tile--month'; // Adiciona  o apontador de cursor
+          }
+          else if (view === 'year') {
+            // Adiciona o cursor
+            return 'react-calendar__tile--month';
           }
         }}
 
         //CONFIGS
-        tileDisabled={({ date, view }) => view === 'month'  
-        && (date < today && !moment(date).isSame(new Date(), 'day') 
-        || date.getDay() === 0 || date.getDay() === 6)}//desativando sabado, domingo e anteriores a hoje
+        tileDisabled={({ date, view }) => view === 'month'
+          && (date < today && !moment(date).isSame(new Date(), 'day')
+            || date.getDay() === 0 || date.getDay() === 6)}//desativando sabado, domingo e anteriores a hoje
         minDate={minDate}
         maxDate={maxDate}
-        showNeighboringMonth = {false}
-        showWeekNumbers = {false}
+        showNeighboringMonth={false}
+        showWeekNumbers={false}
+        formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'long' })}
+        // formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'short' }).charAt(0)}
+        // showFixedNumberOfWeeks={true}
         defaultView="month" // Define a visão padrão como mês 
         maxDetail="month" // Limita a visão máxima para mês
-        locale = {'pt-BR'}
+        locale={'pt-BR'}
       />
       {selectedDate && (
         <>
           <h3>Selecione os horários para {formattedDate}</h3>
           <TimeSlot>
-            {generateTimeSlots().map((time, index) => {
+            {generateTimeSlots(selectedDate).map((time, index) => {
               const dateTime = new Date(selectedDate);
               dateTime.setHours(time.hours, time.minutes, 0, 0);
               const dateKey = selectedDate.toDateString();
               const selectedTimesForDate = studentAvailability[dateKey] || [];
-              const isDisabled = (time.hours === 12 && time.minutes === 0) 
-              || (time.hours === 12 && time.minutes === 30) 
-              || (time.hours === 13 && time.minutes === 0);
+              const isDisabled = (time.hours === 12 && time.minutes === 0)
+                || (time.hours === 12 && time.minutes === 30)
+                || (time.hours === 13 && time.minutes === 0);
               return (
                 <TimeButton
                   key={index}
                   selected={selectedTimesForDate.some(t => t.getHours() === time.hours && t.getMinutes() === time.minutes)}
                   red={isDisabled}
-                  // professor={isProfessorRestriction(dateTime)}
                   disabled={isDisabled} //hora almoço
                   onClick={() => !isDisabled && handleTimeSelect(time)}
                 >
@@ -280,15 +263,15 @@ const Restrictions = ({ /*professorRestrictions = []*/}) => {
         </>
       )}
       <h2>Suas Disponibilidades</h2>
-    
-    {Object.keys(studentAvailability).map(dateKey => ( 
-      studentAvailability[dateKey].map((dateTime, index) => ( 
-      <Card key={index} /*conflict={checkConflict(dateTime)} */> 
-      {dateTime.toLocaleString()} 
-      <RemoveButton onClick={() => removeDateTime(dateTime)}>X</RemoveButton> 
-      </Card> 
-      )) 
-    ))} 
+
+      {Object.keys(studentAvailability).map(dateKey => (
+        studentAvailability[dateKey].map((dateTime, index) => (
+          <Card key={index}>
+            {dateTime.toLocaleString()}
+            <RemoveButton onClick={() => removeDateTime(dateTime)}>X</RemoveButton>
+          </Card>
+        ))
+      ))}
     </Container>
   );
 };
