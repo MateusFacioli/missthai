@@ -7,11 +7,7 @@ import Contact from './components/Contact';
 import Materials from './components/Materials';
 import AboutMe from './components/AboutMe';
 import Payments from './components/Payments';
-<<<<<<< HEAD
-import Schedule from './components/Schedule';
-=======
 import Restrictions from './components/Restrictions';
->>>>>>> 3c519dc (restriction)
 import PasswordRecovery from './components/PasswordRecovery';
 import { PrivateRoute } from './PrivateRoute';
 
@@ -25,11 +21,7 @@ const Routes = () => (
       <Route path="/area-portal/material" component={Materials} />
       <Route path="/area-portal/aboutme" component={AboutMe} />
       <Route path='/area-portal/payments' component={Payments} />
-<<<<<<< HEAD
-      <Route path='/area-portal/schedule' component={Schedule} />
-=======
       <Route path='/area-portal/schedule' component={Restrictions} />
->>>>>>> 3c519dc (restriction)
       <Route path="/passwordrecovery" component={PasswordRecovery} />
     </Switch>
   </BrowserRouter>
