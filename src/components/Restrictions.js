@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import styled from 'styled-components';
 import '../App.css';
@@ -7,10 +7,13 @@ import 'moment/locale/pt-br';
 import { Link } from 'react-router-dom';
 import NavBar from './NavBar';
 import { isDisabled } from '@testing-library/user-event/dist/utils';
+import { db, auth } from '../firebaseConfig';
+import { ref, set } from "firebase/database";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { getLoggedStudentCpfAndEmail } from '../components/StudentCpfLogged';
 
-//criar botao de salvar, salvar no banco
-//card do horário selecionado não muda de cor
-//blocos de horário não muda de cor alunos podem ter as mesmas restricoes
+//arrumar as cores com o fundo cinza azul laranja 
 //ao clicar em hoje na visao de anos ou mes ir para o mes corrente e nao para janeiro 
 //colocar filtros de toda segunda horario x, todo dia horario y ...
 //ADMIN AO VER TODAS AS DISPONIBILIDADES DE ALUNOS PODERÁ ARRASTAR NO VERDE (AVISAR ALUNOS ALTERADOS), SE VERMELHO NAO MOVER
@@ -30,11 +33,22 @@ const Container = styled.div`
 const TodayButton = styled.button` 
 margin: 10px; 
 padding: 10px; 
-background-color: orange; 
+background-color: #61dafb; 
 color: white; 
 border: none; 
 border-radius: 5px; 
 cursor: pointer;
+`;
+
+//botao salvar
+const SaveButton = styled.button` 
+margin: 10px; 
+padding: 10px; 
+background-color: #61dafb; 
+color: white; 
+border: none; 
+border-radius: 
+5px; cursor: pointer;
 `;
 
 //card do horário selecionado
@@ -95,7 +109,6 @@ const Restrictions = () => {
   const [activeStartDate, setActiveStartDate] = useState(new Date()); // Estado para armazenar a data de início ativa
 
   const today = new Date();
-  // const currentMonth = activeStartDate instanceof Date ? activeStartDate.getMonth() : today.getMonth();
   const currentMonth = activeStartDate.getMonth();
   const todayMonth = today.getMonth();
   const currentYear = activeStartDate.getFullYear();
@@ -104,6 +117,29 @@ const Restrictions = () => {
 
   const minDate = new Date(todayYear, 0, 1);
   const maxDate = new Date(todayYear, 11, 31);
+
+  const [cpf, setCpf] = useState('');
+  const [email, setEmail] = useState('');
+
+  //Adquire cpf e email logado
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { cpf: studentCpf, email: studentEmail } = await getLoggedStudentCpfAndEmail();
+        if (!studentCpf || !studentEmail) {
+          throw new Error('CPF ou email do estudante não encontrado');
+        }
+        setCpf(studentCpf);
+        setEmail(studentEmail);
+        console.log("Email e CPF adquiridos:", studentEmail, studentCpf);
+
+      } catch (error) {
+        console.error("Erro ao obter dados do estudante:", error);
+      } 
+    };
+
+    fetchData();
+  }, []);
 
   //HANDLE'S
   const handleDateChange = (date) => {
@@ -140,6 +176,27 @@ const Restrictions = () => {
     }
   };
 
+  const handleSave = async () => {
+    const availabilityArray = Object.values(studentAvailability).flat();
+  
+    const formattedAvailability = {};
+    availabilityArray.forEach(dateTime => {
+      const date = dateTime.toISOString().split('T')[0]; // Obtém a data no formato YYYY-MM-DD
+      const time = dateTime.toISOString().split('T')[1].split('.')[0]; // Obtém o tempo no formato HH:MM:SS
+      if (!formattedAvailability[date]) {
+        formattedAvailability[date] = [];
+      }
+      formattedAvailability[date].push(time);
+    });
+  
+    // Salva a estrutura no banco de dados
+    const dbRef = ref(db, `alunos/restrictions/${cpf}`);
+    // await set(dbRef, { cpf: formattedAvailability });
+    await set(dbRef,formattedAvailability);
+    alert("Disponibilidades salvas com sucesso!");
+  };
+
+
   //FUNCTIONS
 
   const removeDateTime = (dateTimeToRemove) => {
@@ -171,15 +228,26 @@ const Restrictions = () => {
       }
     } else if (day === 5) { // Sexta
       // Não adicionar nenhum horário
+      for (let hour = 7; hour <= 14; hour++) {
+        slots.push({ hours: hour, minutes: 0 });
+        if (hour !== 14) {
+          slots.push({ hours: hour, minutes: 30 });
+        }
+      }
     }
     return slots;
   };
 
   //DOM - HTML
   return (
+    <div className="restriction-container">
     <Container>
       <h2>Selecione suas Disponibilidades</h2>
-      <TodayButton onClick={handleTodayClick}>Hoje</TodayButton>
+      <div>
+        <TodayButton onClick={handleTodayClick}>Hoje</TodayButton>
+        <SaveButton onClick={handleSave}>Salvar</SaveButton>
+        <NavBar />
+      </div>
       <Calendar
         onClickDay={handleDateChange}
         value={selectedDate}
@@ -273,6 +341,7 @@ const Restrictions = () => {
         ))
       ))}
     </Container>
+    </div>
   );
 };
 

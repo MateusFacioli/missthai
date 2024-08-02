@@ -6,7 +6,7 @@ import NavBar from './NavBar';
 const Schedule = () => {
   return (
     <div className="schedule-container">
-      <h1>AGENDA CHEIAA</h1>
+      <h1>Em breve ...</h1>
       <NavBar/>
     </div>
   );

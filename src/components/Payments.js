@@ -6,7 +6,7 @@ import NavBar from './NavBar';
 const Payments = () => {
   return (
     <div className="payments-container">
-      <h1>sou rycaaa $$</h1>
+      <h1>Em breve ...</h1>
      <NavBar/>
     </div>
   );
