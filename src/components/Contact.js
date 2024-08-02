@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInstagram, faWhatsapp, faLinkedin } from '@fortawesome/free-brands-svg-icons';
 import NavBar from './NavBar';
 
-//ALTERAR AQUI
+
 const Contact = () => {
   return (
     <div className="contact-container">
