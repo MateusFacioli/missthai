@@ -13,21 +13,17 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { getLoggedStudentCpfAndEmail } from '../components/StudentCpfLogged';
 
-//arrumar as cores com o fundo cinza azul laranja 
 //ao clicar em hoje na visao de anos ou mes ir para o mes corrente e nao para janeiro 
 //colocar filtros de toda segunda horario x, todo dia horario y ...
 //ADMIN AO VER TODAS AS DISPONIBILIDADES DE ALUNOS PODERÁ ARRASTAR NO VERDE (AVISAR ALUNOS ALTERADOS), SE VERMELHO NAO MOVER
+//buscar as datas e mostrar para admin e para user para ele remover(alterar do banco)
+//arquivo para todos -> material extra todos alunos acessam igual portal sem remover
+//esta salvando o restrictions sem estar no cpf e no admin esta tentando ler como se fosse aluno
 
 moment.locale('pt-br');//traduzir selectedDate
 
 
 //COMPONENTES 
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
 
 //botao hoje
 const TodayButton = styled.button` 
@@ -75,26 +71,18 @@ const RemoveButton = styled.button`
   font-size: 16px;
 `;
 
-//agrupamento dos blocos de horário
-const TimeSlot = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
 //blocos de horário
 const TimeButton = styled.button`
   margin: 5px;
   padding: 10px;
-  background-color: ${props => (props.selected ? 'green' : props.red ? 'red' : 'gray')};
+  background-color: ${props => (props.selected ? 'gray' : props.red ? 'red' : '#0ABAB5')};
   color: white;
   border: none;
   border-radius: 100px;
   cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   opacity: ${props => (props.disabled ? 0.5 : 1)};
   &:hover {
-    background-color: ${props => (props.selected ? 'darkgreen' : props.red ? 'darkred' : 'darkgray')};
+    background-color: ${props => (props.selected ? 'darkgray' : props.red ? 'red' : '#00A6A1')};
   }
 `;
 
@@ -153,7 +141,7 @@ const Restrictions = () => {
     }
     setSelectedDate(today);
     setView('month'); // Muda a visão para o mês
-    setActiveStartDate(today);
+    // setActiveStartDate(today);
   };
 
   const handleTimeSelect = (time) => {
@@ -179,6 +167,11 @@ const Restrictions = () => {
   const handleSave = async () => {
     const availabilityArray = Object.values(studentAvailability).flat();
   
+    if (availabilityArray.length === 0) {
+      alert("Erro ao salvar, selecione uma data primeiro.");
+      return;
+    }
+
     const formattedAvailability = {};
     availabilityArray.forEach(dateTime => {
       const date = dateTime.toISOString().split('T')[0]; // Obtém a data no formato YYYY-MM-DD
@@ -190,7 +183,7 @@ const Restrictions = () => {
     });
   
     // Salva a estrutura no banco de dados
-    const dbRef = ref(db, `alunos/restrictions/${cpf}`);
+    const dbRef = ref(db, `alunos/${cpf}/restrictions`);
     // await set(dbRef, { cpf: formattedAvailability });
     await set(dbRef,formattedAvailability);
     alert("Disponibilidades salvas com sucesso!");
@@ -241,13 +234,12 @@ const Restrictions = () => {
   //DOM - HTML
   return (
     <div className="restriction-container">
-    <Container>
       <h2>Selecione suas Disponibilidades</h2>
-      <div>
-        <TodayButton onClick={handleTodayClick}>Hoje</TodayButton>
+      {/* <div> */}
+        {/*<TodayButton onClick={handleTodayClick}>Hoje</TodayButton>*/}
         <SaveButton onClick={handleSave}>Salvar</SaveButton>
         <NavBar />
-      </div>
+      {/* </div> */}
       <Calendar
         onClickDay={handleDateChange}
         value={selectedDate}
@@ -305,7 +297,7 @@ const Restrictions = () => {
       {selectedDate && (
         <>
           <h3>Selecione os horários para {formattedDate}</h3>
-          <TimeSlot>
+          <div className="time-slot">
             {generateTimeSlots(selectedDate).map((time, index) => {
               const dateTime = new Date(selectedDate);
               dateTime.setHours(time.hours, time.minutes, 0, 0);
@@ -326,7 +318,7 @@ const Restrictions = () => {
                 </TimeButton>
               );
             })}
-          </TimeSlot>
+          </div>
 
         </>
       )}
@@ -340,7 +332,6 @@ const Restrictions = () => {
           </Card>
         ))
       ))}
-    </Container>
     </div>
   );
 };

@@ -9,13 +9,14 @@ import AboutMe from './components/AboutMe';
 import Payments from './components/Payments';
 import Restrictions from './components/Restrictions';
 import PasswordRecovery from './components/PasswordRecovery';
+import Extras from './components/Extras';
 import { PrivateRoute } from './PrivateRoute';
 
 const Routes = () => (
   <BrowserRouter>
     <Switch>
       <PrivateRoute path="/area-portal" component={StudentPortalPage} allowedRoles={['aluno', 'admin']} />
-      <PrivateRoute path="/area-admin" component={AdminAreaPage} allowedRoles={['admin']} />
+      <PrivateRoute path="/area-admin/students" component={AdminAreaPage} allowedRoles={['admin']} />
       <Route path="/area-login" component={AdminLogin} />
       <Route path="/area-portal/contact" component={Contact} />
       <Route path="/area-portal/material" component={Materials} />
@@ -23,6 +24,8 @@ const Routes = () => (
       <Route path='/area-portal/payments' component={Payments} />
       <Route path='/area-portal/schedule' component={Restrictions} />
       <Route path="/passwordrecovery" component={PasswordRecovery} />
+      <Route path='/area-portal/extras' component={Extras} />
+
     </Switch>
   </BrowserRouter>
 );

@@ -4,6 +4,7 @@ import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno, getMateri
 import { storage } from '../firebaseConfig';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { formatFileSize } from '../utils/Utils';
+import NavBar from '../components/NavBar';
 import Files from '../components/Files';
 
 const AdminAreaPage = () => {
@@ -187,6 +188,7 @@ const AdminAreaPage = () => {
   return (
     <div className="App-header">
       <p>Área administrativa</p>
+      {/* <NavBar /> */}
       {alunos.length === 0 ? (
         <p>Sem dados de alunos</p>
       ) : (

@@ -6,6 +6,7 @@
 .contact-container,
 .material-container,
 .aboutme-container,
+.extras-container,
 .payments-container,
 .schedule-container,
 .restriction-container,
@@ -125,13 +126,12 @@
 }
 
 /*Restrictions*/
-
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
+/*card da data selecionado */
 .card {
   width: 200px;
   padding: 10px;
@@ -149,7 +149,7 @@
 .card.available {
   background-color: green;
 }
-
+/* botao remover */
 .remove-button {
   position: absolute;
   top: 5px;
@@ -160,7 +160,7 @@
   cursor: pointer;
   font-size: 16px;
 }
-
+/* agrupamento dos blocos de horário */
 .time-slot {
   display: flex;
   flex-wrap: wrap;
@@ -168,6 +168,7 @@
   margin-top: 20px;
 }
 
+/* blocos de horário */
 .time-button {
   margin: 5px;
   padding: 10px;
@@ -190,17 +191,12 @@
   background-color: darkgreen;
 }
 
+/*Calendar*/
 .react-calendar__tile--professor-restriction {
   background: blue !important;
   color: white !important;
 }
 
-.react-calendar__tile--available {
-  background: green !important;
-  color: white !important;
-}
-
-/*Calendar*/
 .react-calendar__tile--conflict {
   background: red !important;
   color: white !important;
