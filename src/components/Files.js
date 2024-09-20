@@ -7,11 +7,15 @@ import { storage } from '../firebaseConfig';
 import '../App.css';
 import NavBar from './NavBar';
 import { handleFileDelete, alunos } from '../pages/AdminAreaPage';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faUpload, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Importando os ícones
 
-const Files = ({ cpf }) => {
+
+const Files = ({ cpf, onDelete }) => {
     const [arquivos, setArquivos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -61,8 +65,11 @@ const Files = ({ cpf }) => {
                             {file.name} - 
                             <small>{new Date(file.updated).toLocaleString()} - 
                             {formatFileSize(file.size)}</small>
-                        </a> </li>
-                        {/* <button onClick={() => handleFileDelete(aluno.cpf, index)}>Remover Material</button> */}
+                        </a>
+                        <button onClick={() => onDelete(cpf, file.name)}>
+                        <FontAwesomeIcon icon={faTrashCan} title="Excluir material" />
+                        </button>
+                         </li>
                     </ul>
                 ))
             )}

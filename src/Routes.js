@@ -11,7 +11,7 @@ import Restrictions from './components/Restrictions';
 import PasswordRecovery from './components/PasswordRecovery';
 import Extras from './components/Extras';
 import { PrivateRoute } from './PrivateRoute';
-
+//criar o agenda para o admin vendo as restricoes dos alunos
 const Routes = () => (
   <BrowserRouter>
     <Switch>

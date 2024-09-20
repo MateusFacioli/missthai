@@ -5,6 +5,7 @@ import { getAlunos } from '../FirebaseService';
 
 const AdminLogin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const auth = getAuth();
 
@@ -18,22 +19,25 @@ const AdminLogin = () => {
       if (allowedEmails.includes(result.user.email)) {
         console.log("Login com Google bem-sucedido:", result.user);
         setIsLoggedIn(true);
-        const alunos = await getAlunos();
+        await getAlunos();
         navigate('/area-admin');
       } else {
         console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
       }
     } catch (error) {
       console.error("Erro ao fazer login com Google:", error.message);
+      setError("Erro ao fazer login com Google:" + error.message);
     }
   };
   return (
     <div>
-      {!isLoggedIn && (
-        <button onClick={handleGoogleLogin}>Login com Google</button>
-      )}
-      {isLoggedIn && <p>Você está logado!</p>}
-    </div>
+    {!isLoggedIn ? (
+      <button onClick={handleGoogleLogin}>Login com Google</button>
+    ) : (
+      <p>Você está logado!</p>
+    )}
+    {error && <p style={{ color: 'red' }}>{error}</p>}
+  </div>
   );
 };
 

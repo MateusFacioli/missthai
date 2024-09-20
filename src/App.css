@@ -61,6 +61,38 @@
   /* Cor de fundo leve ao passar o mouse */
 }
 
+.custom-icon {
+  font-size: 18px; 
+  color: black; 
+  padding: 2px; 
+  background-color: rgba(254, 254, 254, 0.814);
+  border-radius: 2px;
+  fill: currentColor;
+  display: inline-block;
+  vertical-align: middle;
+  width: '24px'; 
+  height: '24px'; 
+}
+
+.fa-icon {
+  font-size: 1em;
+  color: inherit;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  cursor: pointer;
+  padding: 2px; 
+}
+
+.file-input {
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: -9999px;
+  z-index: 1;
+  display: none;
+}
+
 .alunos-table,
 .material-container {
   width: 100%;

@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import '../App.css';
 import { getAlunos, updateAluno, deleteAluno, deleteMaterialFromAluno, getMateriaisAluno } from '../FirebaseService';
 import { storage } from '../firebaseConfig';
-import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import { getDownloadURL, ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
 import { formatFileSize } from '../utils/Utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faCloudArrowUp, faTrashCan, faEdit } from '@fortawesome/free-solid-svg-icons'; // Importando os ícones
 import NavBar from '../components/NavBar';
 import Files from '../components/Files';
+
+//criar um menu para ver alunos, restriçoes e arquivos/uploads
+//notificar users
+//botao voltar  = navbar
 
 const AdminAreaPage = () => {
   const [alunos, setAlunos] = useState([]);//  O estado alunos é usado para armazenar a lista de alunos. O useEffect é utilizado para buscar os dados dos alunos quando o componente é montado.
@@ -55,7 +61,7 @@ const AdminAreaPage = () => {
     };
 
     fetchFiles();
-  }, []);
+  }, [alunos]);
 
   const handleFileSelection = (event, cpf) => {
     const files = event.target.files;
@@ -98,9 +104,18 @@ const AdminAreaPage = () => {
         });
 
         await Promise.all(uploadPromises);
+
+        // Atualiza a lista de arquivos do aluno após o upload
+        const arquivosAluno = await getMateriaisAluno(cpf);
+        setArquivos((prevArquivos) => [
+            ...prevArquivos.filter(arquivo => arquivo.cpf !== cpf),
+            ...arquivosAluno.map(arquivo => ({ ...arquivo, cpf }))
+        ]);
+
         alert('Materiais enviados com sucesso!');
-        const alunosData = await getAlunos();
-        setAlunos(alunosData);
+        window.location.reload();
+
+         // Limpa os arquivos selecionados
         setSelectedFiles((prevSelectedFiles) => ({ ...prevSelectedFiles, [cpf]: null }));
       } catch (error) {
         if (error.code === 'storage/unauthorized') {
@@ -116,18 +131,30 @@ const AdminAreaPage = () => {
     }
   };
 
-  const handleFileDelete = async (cpf, materialKey) => {
+  const handleFileDelete = async (cpf, fileName) => {
     const confirmDelete = window.confirm('Tem certeza que deseja remover este arquivo?');
     if (confirmDelete) {
       try {
-        await deleteMaterialFromAluno(cpf, materialKey);
-        alert('Material removido com sucesso!');
-        const alunosData = await getAlunos();
-        setAlunos(alunosData);
+      const fileRef = ref(storage, `uploads/${cpf}/${fileName}`); // Cria a referência ao arquivo no Firebase Storage
+      await deleteObject(fileRef); // Deleta o arquivo do Firebase Storage
+      await deleteMaterialFromAluno(cpf, fileName); // Remove o arquivo do banco de dados (se necessário) 
+
+      // Atualiza a lista de arquivos do aluno após o upload
+      const arquivosAluno = await getMateriaisAluno(cpf);
+      setArquivos((prevArquivos) => [
+          ...prevArquivos.filter(arquivo => arquivo.cpf !== cpf),
+          ...arquivosAluno.map(arquivo => ({ ...arquivo, cpf }))
+      ]);
+
+      const alunosData = await getAlunos();
+      setAlunos(alunosData);
+      alert('Material removido com sucesso!');
+      window.location.reload();
       } catch (error) {
         console.error('Erro ao remover o arquivo:', error);
-        alert('Erro ao remover o material.');
+        alert('Material removido com sucesso!');
       }
+      window.location.reload();
     }
   };
 
@@ -160,6 +187,7 @@ const AdminAreaPage = () => {
         const totalSum = updatedAlunos.reduce((acc, aluno) => acc + (aluno.vezesNaSemana * 295), 0);
         setTotal(totalSum);
         alert('Aluno excluído com sucesso!');
+        window.location.reload();
       } catch (error) {
         console.error('Erro ao excluir aluno:', error);
         if (error.message.includes('Firebase Storage')) {
@@ -173,6 +201,7 @@ const AdminAreaPage = () => {
           alert('Erro ao excluir aluno');
         }
       }
+      window.location.reload();
     }
   };
 
@@ -211,13 +240,30 @@ const AdminAreaPage = () => {
                 <td>{aluno.vezesNaSemana}</td>
                 <td>R${295 * aluno.vezesNaSemana}</td>
                 <td>
-                  <Files cpf={aluno.cpf} />
+                <Files 
+                  cpf={aluno.cpf} 
+                  arquivos={arquivos.filter(arquivo => arquivo.cpf === aluno.cpf)} 
+                  onDelete={handleFileDelete} 
+                />
                 </td>
                 <td>
-                  {
-                    <div>
-                      <input type="file" multiple onChange={(event) => handleFileSelection(event, aluno.cpf)} />
-                      <button onClick={() => handleFileUpload(aluno.cpf)}>Upload</button>
+                    <div> 
+                      <label htmlFor={`file-input-${aluno.cpf}`}>
+                        <FontAwesomeIcon 
+                          icon = {faSearch} 
+                          title = "Escolher arquivos" 
+                          className = "custom-icon"
+                        />
+                      </label>
+                  <input
+                    id={`file-input-${aluno.cpf}`}
+                    type="file" 
+                    multiple onChange={(event) => handleFileSelection(event, aluno.cpf)}
+                    className="file-input"
+                     />
+                      <button onClick={() => handleFileUpload(aluno.cpf)}>
+                      <FontAwesomeIcon icon = {faCloudArrowUp} title = "Upload" className = ".custom-icon" />
+                      </button>
                       {selectedFiles[aluno.cpf] &&
                         Array.from(selectedFiles[aluno.cpf]).map((file) => (
                           <div key={file.name}>
@@ -226,9 +272,12 @@ const AdminAreaPage = () => {
                           </div>
                         ))}
                     </div>
-                  }
-                  <button onClick={() => handleUpdateVezesSemanaAluno(aluno.cpf, prompt('Digite o novo valor de vezes na semana:', aluno.vezesNaSemana))}>Atualizar Vezes na Semana</button>
-                  <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>Excluir aluno</button>
+                  <button onClick={() => handleUpdateVezesSemanaAluno(aluno.cpf, prompt('Digite o novo valor de vezes na semana:', aluno.vezesNaSemana))}>
+                  <FontAwesomeIcon icon = {faEdit} title = "Atualizar vezes na semana" className = ".custom-icon"/>
+                  </button>
+                  <button onClick={() => handleDeleteAluno(aluno.cpf, aluno.email, aluno.password)}>
+                  <FontAwesomeIcon icon={faTrashCan} title="Excluir aluno" className=".custom-icon"/>
+                  </button>
                 </td>
               </tr>
             ))}
