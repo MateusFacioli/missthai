@@ -1,146 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, get, update } from 'firebase/database';
+// import React, { useState, useEffect } from 'react';
+// import { ref, listAll, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage';
+// import { storage } from '../firebaseConfig';
 
-const FolderManager = ({ alunoCpf }) => {
-  const [folderStructure, setFolderStructure] = useState({});
-  const [currentPath, setCurrentPath] = useState('');
-  const [newFolderName, setNewFolderName] = useState('');
+// const FolderManager = ({ alunoCpf, onPathChange }) => {
+//   const [folderStructure, setFolderStructure] = useState({});
+//   const [currentPath, setCurrentPath] = useState('');
+//   const [newFolderName, setNewFolderName] = useState('');
+//   const [selectedFile, setSelectedFile] = useState(null);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchFolderStructure();
-  }, [alunoCpf]);
+//   useEffect(() => {
+//     const fetchFolderStructure = async () => {
+//       try {
+//         const storageRef = ref(storage, `uploads/${alunoCpf}`);
+//         const structure = await fetchFolderContents(storageRef);
+//         setFolderStructure(structure);
+//       } catch (error) {
+//         console.error('Erro ao carregar estrutura de pastas:', error);
+//         setError(error.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-  const fetchFolderStructure = async () => {
-    const db = getDatabase();
-    const folderRef = ref(db, `alunos/${alunoCpf}/folderStructure`);
-    const snapshot = await get(folderRef);
-    if (snapshot.exists()) {
-      setFolderStructure(snapshot.val());
-    } else {
-      setFolderStructure({});
-    }
-  };
+//     if (alunoCpf) fetchFolderStructure();
+//   }, [alunoCpf]);
 
-  const saveFolderStructure = async (updatedStructure) => {
-    const db = getDatabase();
-    const folderRef = ref(db, `alunos/${alunoCpf}/folderStructure`);
-    await set(folderRef, updatedStructure);
-  };
+//   const fetchFolderContents = async (folderRef) => {
+//     const result = await listAll(folderRef);
+//     const subfolders = {};
+//     for (const subfolder of result.prefixes) {
+//       subfolders[subfolder.name] = await fetchFolderContents(subfolder);
+//     }
+//     return { subfolders };
+//   };
 
-  const addFolder = () => {
-    if (!newFolderName.trim()) {
-      alert('O nome da pasta não pode estar vazio.');
-      return;
-    }
+//   const navigateToFolder = (folderName) => {
+//     const newPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+//     setCurrentPath(newPath);
+//     if (onPathChange) onPathChange(newPath);
+//   };
 
-    const pathArray = currentPath.split('/').filter(Boolean);
-    let currentLevel = folderStructure;
+//   const navigateBack = () => {
+//     const pathArray = currentPath.split('/').filter(Boolean);
+//     pathArray.pop();
+//     const newPath = pathArray.join('/');
+//     setCurrentPath(newPath);
+//     if (onPathChange) onPathChange(newPath);
+//   };
 
-    pathArray.forEach((folder) => {
-      if (!currentLevel[folder]) {
-        currentLevel[folder] = {};
-      }
-      currentLevel = currentLevel[folder];
-    });
+//   const handleFileSelection = (event) => {
+//     const file = event.target.files[0];
+//     if (file) {
+//       setSelectedFile(file);
+//     }
+//   };
 
-    if (currentLevel[newFolderName]) {
-      alert('A pasta já existe neste nível.');
-    } else {
-      currentLevel[newFolderName] = {};
-      const updatedStructure = { ...folderStructure };
-      setFolderStructure(updatedStructure);
-      saveFolderStructure(updatedStructure);
-      setNewFolderName('');
-    }
-  };
+//   const addFolderWithFile = async () => {
+//     if (!newFolderName.trim()) {
+//       alert('O nome da pasta não pode estar vazio.');
+//       return;
+//     }
 
-  const navigateToFolder = (folderName) => {
-    setCurrentPath((prevPath) => (prevPath ? `${prevPath}/${folderName}` : folderName));
-  };
+//     if (!selectedFile) {
+//       alert('Selecione um arquivo para adicionar à pasta.');
+//       return;
+//     }
 
-  const navigateBack = () => {
-    const pathArray = currentPath.split('/').filter(Boolean);
-    pathArray.pop();
-    setCurrentPath(pathArray.join('/'));
-  };
+//     const folderPath = `uploads/${alunoCpf}/${currentPath}/${newFolderName}`;
+//     const fileRef = ref(storage, `${folderPath}/${selectedFile.name}`);
 
-  const removeFolder = (folderName, path) => {
-    const pathArray = path.split('/').filter(Boolean);
-    let currentLevel = folderStructure;
+//     try {
+//       await uploadBytes(fileRef, selectedFile);
+//       alert('Pasta e arquivo criados com sucesso!');
+//       setNewFolderName('');
+//       setSelectedFile(null);
 
-    // Navega até o nível anterior da pasta
-    pathArray.forEach((folder, index) => {
-      if (index === pathArray.length - 1) return; // Para antes da pasta a ser removida
-      currentLevel = currentLevel[folder];
-    });
+//       const storageRef = ref(storage, `uploads/${alunoCpf}`);
+//       const updatedStructure = await fetchFolderContents(storageRef);
+//       setFolderStructure(updatedStructure);
+//     } catch (error) {
+//       console.error('Erro ao criar pasta e arquivo:', error);
+//       alert('Erro ao criar pasta e arquivo.');
+//     }
+//   };
 
-    // Verifica se a pasta contém subpastas ou arquivos
-    if (Object.keys(currentLevel[folderName]).length > 0) {
-      alert('A pasta não pode ser removida porque contém subpastas ou arquivos.');
-      return;
-    }
+//   const deleteFolder = async (folderName) => {
+//     const folderPath = `uploads/${alunoCpf}/${currentPath}/${folderName}`;
+//     const folderRef = ref(storage, folderPath);
 
-    // Remove a pasta
-    delete currentLevel[folderName];
-    const updatedStructure = { ...folderStructure };
-    setFolderStructure(updatedStructure);
-    saveFolderStructure(updatedStructure);
+//     try {
+//       await deleteObject(folderRef);
+//       alert('Pasta removida com sucesso!');
+//       const storageRef = ref(storage, `uploads/${alunoCpf}`);
+//       const updatedStructure = await fetchFolderContents(storageRef);
+//       setFolderStructure(updatedStructure);
+//     } catch (error) {
+//       console.error('Erro ao remover pasta:', error);
+//       alert('Erro ao remover pasta.');
+//     }
+//   };
 
-    // Atualiza o caminho atual se a pasta removida for a atual
-    if (currentPath === path) {
-      navigateBack();
-    }
-  };
+//   const renderFolders = (folders) => {
+//     return Object.keys(folders.subfolders || {}).map((folderName) => (
+//       <div key={folderName} className="folder-item">
+//         <span onClick={() => navigateToFolder(folderName)}>{folderName}</span>
+//         <button onClick={() => deleteFolder(folderName)}>Remover</button>
+//       </div>
+//     ));
+//   };
 
-  const renderFolders = (folders, path = '') => {
-    return Object.keys(folders).map((folderName) => {
-      const folderPath = `${path}/${folderName}`.replace(/^\//, ''); // Remove a barra inicial
+//   if (loading) return <p>Carregando...</p>;
+//   if (error) return <p>Erro: {error}</p>;
 
-      return (
-        <div key={folderPath} style={{ marginLeft: '20px' }}>
-          <span
-            onClick={() => navigateToFolder(folderName)}
-            style={{ cursor: 'pointer', color: 'blue', marginRight: '10px' }}
-          >
-            {folderName}
-          </span>
-          <button
-            onClick={() => removeFolder(folderName, folderPath)}
-            style={{ marginLeft: '10px' }}
-          >
-            Remover
-          </button>
-          {currentPath.startsWith(folderPath) && renderFolders(folders[folderName], folderPath)}
-        </div>
-      );
-    });
-  };
+//   const currentFolder = currentPath
+//     .split('/')
+//     .reduce((acc, folder) => acc?.subfolders?.[folder], folderStructure);
 
-  return (
-    <div>
-      <h2>Gerenciador de Pastas</h2>
-      <div>
-        <label>Caminho Atual: </label>
-        <span>{currentPath || 'Raiz'}</span>
-      </div>
-      <div>
-        <input
-          type="text"
-          placeholder="Nome da nova pasta"
-          value={newFolderName}
-          onChange={(e) => setNewFolderName(e.target.value)}
-        />
-        <button onClick={addFolder}>Adicionar Pasta</button>
-        <button onClick={navigateBack} disabled={!currentPath}>
-          Voltar
-        </button>
-      </div>
-      <div>
-        <h3>Estrutura de Pastas:</h3>
-        <div>{renderFolders(folderStructure)}</div>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div>
+//       <h2>Gerenciador de Pastas</h2>
+//       <div>
+//         <label>Caminho Atual: </label>
+//         <span>{currentPath || 'Raiz'}</span>
+//       </div>
+//       <div>
+//         <input
+//           type="text"
+//           placeholder="Nome da nova pasta"
+//           value={newFolderName}
+//           onChange={(e) => setNewFolderName(e.target.value)}
+//         />
+//         <input type="file" onChange={handleFileSelection} />
+//         <button onClick={addFolderWithFile}>Adicionar Pasta com Arquivo</button>
+//         <button onClick={navigateBack} disabled={!currentPath}>
+//           Voltar
+//         </button>
+//       </div>
+//       <div>
+//         <h3>Estrutura de Pastas:</h3>
+//         {renderFolders(currentFolder || folderStructure)}
+//       </div>
+//     </div>
+//   );
+// };
 
-export default FolderManager;
+// export default FolderManager;

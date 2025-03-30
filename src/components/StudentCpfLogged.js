@@ -7,6 +7,8 @@ let globalEmail = '';
 const StudentCpfLogged = async (email) => {
   if (!email) {
     console.error('Email não fornecido');
+    alert('Email não fornecido');
+
   }
   const db = getDatabase();
   const studentsRef = ref(db, 'alunos');

@@ -1,80 +1,110 @@
-import React, { useEffect, useState } from 'react';
-import { ref, listAll, getMetadata, getDownloadURL } from 'firebase/storage';
-import { getLoggedStudentCpfAndEmail } from '../components/StudentCpfLogged';
-import { formatFileSize } from '../utils/Utils';
-import { Link } from 'react-router-dom';
-import { storage } from '../firebaseConfig';
-import '../App.css';
-import NavBar from './NavBar';
-import { handleFileDelete, alunos } from '../pages/AdminAreaPage';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faUpload, faTrashCan } from '@fortawesome/free-solid-svg-icons'; // Importando os ícones
+// import React, { useEffect, useState } from 'react';
+// import { ref, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
+// import { storage } from '../firebaseConfig';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// import { faFolder, faFile, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
+// const Files = ({ cpf }) => {
+//   const [folderStructure, setFolderStructure] = useState({});
+//   const [currentPath, setCurrentPath] = useState('');
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
 
-const Files = ({ cpf, onDelete }) => {
-    const [arquivos, setArquivos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    // const [isAdmin, setIsAdmin] = useState(false);
+//   useEffect(() => {
+//     const fetchFolderStructure = async () => {
+//       try {
+//         const storageRef = ref(storage, `uploads/${cpf}/${currentPath}`);
+//         const structure = await fetchFolderContents(storageRef);
+//         setFolderStructure(structure);
+//       } catch (error) {
+//         console.error('Erro ao listar pastas e arquivos:', error);
+//         setError(error.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchFolderStructure();
+//   }, [cpf, currentPath]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const storageRef = ref(storage, `uploads/${cpf}`);
-                const result = await listAll(storageRef);
-                const arquivosData = await Promise.all(result.items.map(async (itemRef) => {
-                    try {
-                        const metadata = await getMetadata(itemRef);
-                        const url = await getDownloadURL(itemRef);
-                        return { name: metadata.name, size: metadata.size, updated: metadata.updated, url };
-                    } catch (error) {
-                        console.error("Erro ao obter metadados do arquivo:", error);
-                        return null;
-                    }
-                }));
-                setArquivos(arquivosData.filter(arquivo => arquivo !== null));
-            } catch (error) {
-                console.error("Erro ao listar arquivos no Firebase Storage:", error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+//   const fetchFolderContents = async (folderRef) => {
+//     const result = await listAll(folderRef);
+//     const files = await Promise.all(
+//       result.items.map(async (item) => {
+//         const url = await getDownloadURL(item);
+//         return { name: item.name, url };
+//       })
+//     );
+//     const subfolders = {};
+//     for (const subfolder of result.prefixes) {
+//       subfolders[subfolder.name] = await fetchFolderContents(subfolder);
+//     }
+//     return { files, subfolders };
+//   };
 
-        if (cpf) {
-            fetchData();
-        }
-    }, [cpf]);
+//   const deleteFile = async (filePath) => {
+//     const fileRef = ref(storage, filePath);
+//     try {
+//       await deleteObject(fileRef);
+//       alert('Arquivo removido com sucesso!');
+//       setCurrentPath(currentPath); // Atualiza a página
+//     } catch (error) {
+//       console.error('Erro ao remover arquivo:', error);
+//       alert('Erro ao remover arquivo.');
+//     }
+//   };
 
-    if (loading) {
-        return <p>Carregando...</p>;
-    }
+//   const deleteFolder = async (folderName) => {
+//     const folderPath = `uploads/${cpf}/${currentPath}/${folderName}`;
+//     const folderRef = ref(storage, folderPath);
+//     try {
+//       await deleteObject(folderRef);
+//       alert('Pasta removida com sucesso!');
+//       setCurrentPath(currentPath); // Atualiza a página
+//     } catch (error) {
+//       console.error('Erro ao remover pasta:', error);
+//       alert('Erro ao remover pasta.');
+//     }
+//   };
 
-    if (error) {
-        return <p>Erro: {error}</p>;
-    }
+//   const navigateToFolder = (folderName) => {
+//     setCurrentPath((prevPath) => (prevPath ? `${prevPath}/${folderName}` : folderName));
+//   };
 
-    return (
-        <div className="files-container">
-            {arquivos.length === 0 ? (
-                <p>Sem materiais disponíveis</p>
-            ) : (
-                arquivos.map((file, index) => (
-                    <ul key={index}>
-                        <li> <a href={file.url} target="_blank" rel="noopener noreferrer">
-                            {file.name} - 
-                            <small>{new Date(file.updated).toLocaleString()} - 
-                            {formatFileSize(file.size)}</small>
-                        </a>
-                        <button onClick={() => onDelete(cpf, file.name)}>
-                        <FontAwesomeIcon icon={faTrashCan} title="Excluir material" />
-                        </button>
-                         </li>
-                    </ul>
-                ))
-            )}
-        </div>
-    );
-};
+//   const renderFolderContents = (contents, path = '') => {
+//     return (
+//       <div className="explorer-container">
+//         {Object.entries(contents.subfolders || {}).map(([name]) => (
+//           <div key={`${path}/${name}`} className="explorer-item folder">
+//             <FontAwesomeIcon icon={faFolder} />
+//             <span onClick={() => navigateToFolder(name)}>{name}</span>
+//             <button onClick={() => deleteFolder(name)}>
+//               <FontAwesomeIcon icon={faTrashCan} />
+//             </button>
+//           </div>
+//         ))}
+//         {contents.files?.map((file) => (
+//           <div key={file.name} className="explorer-item file">
+//             <FontAwesomeIcon icon={faFile} />
+//             <a href={file.url} target="_blank" rel="noopener noreferrer">
+//               {file.name}
+//             </a>
+//             <button onClick={() => deleteFile(`${currentPath}/${file.name}`)}>
+//               <FontAwesomeIcon icon={faTrashCan} />
+//             </button>
+//           </div>
+//         ))}
+//       </div>
+//     );
+//   };
 
-export default Files;
+//   if (loading) return <p>Carregando...</p>;
+//   if (error) return <p>Erro: {error}</p>;
+
+//   return (
+//     <div className="files-container">
+//       {renderFolderContents(folderStructure)}
+//     </div>
+//   );
+// };
+
+// export default Files;

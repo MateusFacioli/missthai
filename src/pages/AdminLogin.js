@@ -22,6 +22,7 @@ const AdminLogin = () => {
         await getAlunos();
         navigate('/area-admin');
       } else {
+        alert("Acesso negado. Este email não tem permissão para fazer login como admin.");
         console.error("Acesso negado. Este email não tem permissão para fazer login como admin.");
       }
     } catch (error) {

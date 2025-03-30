@@ -1,104 +1,114 @@
 import React, { useEffect, useState } from 'react';
-import { ref, listAll, getMetadata, getDownloadURL } from 'firebase/storage';
+import { ref, listAll, getDownloadURL } from 'firebase/storage';
 import { getLoggedStudentCpfAndEmail } from '../components/StudentCpfLogged';
-import { formatFileSize } from '../utils/Utils';
-import { Link } from 'react-router-dom';
 import { storage } from '../firebaseConfig';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolder, faFile, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import '../App.css';
 import NavBar from './NavBar';
 
 const Materials = () => {
-  const [arquivos, setArquivos] = useState([]);
+  const [folderStructure, setFolderStructure] = useState({});
+  const [currentPath, setCurrentPath] = useState('');
   const [cpf, setCpf] = useState('');
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchFolderStructure = async () => {
       try {
-        const { cpf: studentCpf, email: studentEmail } = await getLoggedStudentCpfAndEmail();
-        if (!studentCpf || !studentEmail) {
-          throw new Error('CPF ou email do estudante não encontrado');
+        const { cpf: studentCpf } = await getLoggedStudentCpfAndEmail();
+        if (!studentCpf) {
+          throw new Error('CPF do estudante não encontrado');
         }
         setCpf(studentCpf);
-        setEmail(studentEmail);
-        console.log("Email e CPF adquiridos:", studentEmail, studentCpf);
 
-        try {
-          const storageRef = ref(storage, `uploads/${studentCpf}`);
-          const result = await listAll(storageRef);
-          const arquivosData = await Promise.all(result.items.map(async (itemRef) => {
-            try {
-              const metadata = await getMetadata(itemRef);
-              const url = await getDownloadURL(itemRef);
-              return { name: metadata.name, size: metadata.size, updated: metadata.updated, url };
-            } catch (error) {
-              console.error("Erro ao obter metadados do arquivo:", error);
-              return null;
-            }
-          }));
-
-          setArquivos(arquivosData.filter(arquivo => arquivo !== null));
-        } catch (error) {
-          console.error("Erro ao listar arquivos no Firebase Storage:", error);
-        }
+        const storageRef = ref(storage, `uploads/${studentCpf}`);
+        const structure = await fetchFolderContents(storageRef);
+        setFolderStructure(structure);
       } catch (error) {
-        console.error("Erro ao obter dados do estudante:", error);
+        console.error('Erro ao carregar estrutura de pastas:', error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    fetchFolderStructure();
   }, []);
 
-  if (loading) {
-    return <p>Carregando...</p>;
-  }
+  const fetchFolderContents = async (folderRef) => {
+    const result = await listAll(folderRef);
+    const files = await Promise.all(
+      result.items.map(async (item) => {
+        const url = await getDownloadURL(item);
+        return { name: item.name, url };
+      })
+    );
 
-  if (error) {
-    return <p>Erro: {error}</p>;
-  }
+    const subfolders = {};
+    for (const subfolder of result.prefixes) {
+      subfolders[subfolder.name] = await fetchFolderContents(subfolder);
+    }
+
+    return { files, subfolders };
+  };
+
+  const navigateToFolder = (folderName) => {
+    setCurrentPath((prevPath) => (prevPath ? `${prevPath}/${folderName}` : folderName));
+  };
+
+  const navigateBack = () => {
+    setCurrentPath((prevPath) => {
+      const pathArray = prevPath.split('/').filter(Boolean);
+      pathArray.pop();
+      return pathArray.join('/');
+    });
+  };
+
+  const renderFolderContents = (contents) => {
+    if (!contents) return null;
+
+    return (
+      <ul className="folder-list">
+        {Object.entries(contents.subfolders || {}).map(([name]) => (
+          <li key={name} className="folder-item">
+            <FontAwesomeIcon icon={faFolder} className="fa-icon" />
+            <span onClick={() => navigateToFolder(name)}>{name}</span>
+          </li>
+        ))}
+        {contents.files?.map((file) => (
+          <li key={file.name} className="folder-item">
+            <FontAwesomeIcon icon={faFile} className="fa-icon" />
+            <a href={file.url} target="_blank" rel="noopener noreferrer">
+              {file.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  if (loading) return <p>Carregando...</p>;
+  if (error) return <p>Erro: {error}</p>;
+
+  const currentFolder = currentPath
+    .split('/')
+    .reduce((acc, folder) => acc?.subfolders?.[folder], folderStructure);
+
+  const isEmpty = !currentFolder?.files?.length && !Object.keys(currentFolder?.subfolders || {}).length;
 
   return (
     <div className="material-container">
-      <h1>Seus arquivos</h1>
-      {/* {alunos.map((aluno) => (
-          <tr key={aluno.cpf}>
-            <td>{aluno.nome}</td>
-            <td>{aluno.email}</td>
-            <td>{aluno.vezesNaSemana}</td>
-            <td>R${295 * aluno.vezesNaSemana}</td>
-          </tr>
-        ))} */}
-      {arquivos.length === 0 ? (
-        <p>Sem materiais disponíveis</p>
-      ) : (
-
-        <table className="alunos-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Última modificação</th>
-              <th>Tamanho</th>
-            </tr>
-          </thead>
-          <tbody>
-            {arquivos.map((file, index) => (
-              <tr key={index}>
-                <td> <a href={file.url} target="_blank" rel="noopener noreferrer">
-                  {file.name}
-                </a> </td>
-                <td>{new Date(file.updated).toLocaleString()}</td>
-                <td>{formatFileSize(file.size)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      <NavBar/>
+      <h1>Seus Arquivos</h1>
+      <div>
+        <button onClick={navigateBack} disabled={!currentPath}>
+          Voltar
+        </button>
+        <span>{currentPath}</span>
+      </div>
+      {renderFolderContents(currentFolder || folderStructure)}
+      <NavBar />
     </div>
   );
 };

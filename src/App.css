@@ -61,6 +61,91 @@
   /* Cor de fundo leve ao passar o mouse */
 }
 
+.folder-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.folder-item {
+  cursor: pointer;
+  color: black;
+  margin: 5px 0;
+  gap: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.folder-item span,
+.folder-item a {
+  color: black;
+  text-decoration: none;
+  transition: text-decoration 0.3s ease, color 0.3s ease;
+}
+
+.folder-item span:hover,
+.folder-item a:hover {
+  text-decoration: underline;
+  color: red; /* Cor ao passar o mouse */
+}
+
+.folder-item button {
+  background-color: transparent;
+  border: none;
+  color: black;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.folder-item button:hover {
+  color: red;
+}
+
+.folder-item a {
+  margin-left: 10px;
+  color: black;
+  text-decoration: none;
+}
+
+.files-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.explorer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaçamento entre ícone, nome e botão */
+  cursor: pointer;
+}
+
+.explorer-item span,
+.explorer-item a {
+  text-decoration: none;
+  color: inherit;
+  transition: text-decoration 0.3s ease, color 0.3s ease;
+}
+
+.explorer-item span:hover,
+.explorer-item a:hover {
+  text-decoration: underline;
+  color: red; /* Cor ao passar o mouse */
+}
+
+.explorer-item button {
+  background-color: transparent;
+  border: none;
+  color: black;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.explorer-item button:hover {
+  color: red; /* Cor ao passar o mouse no botão */
+}
+
 .custom-icon {
   font-size: 18px; 
   color: black; 

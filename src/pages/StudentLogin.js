@@ -63,7 +63,7 @@ const StudentLogin = () => {
       navigate('/area-portal');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
-      alert('Erro ao fazer login: credencial não cadastrada');
+      alert('Erro ao fazer login: email ou senha errados');
     }
   };
 
